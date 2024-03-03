@@ -8,7 +8,8 @@ class UserStatus(Enum):
 
 # From this point on, the values can be changed
 MESSAGE_MEMORY_SIZE = 10
-REFRESH_SLEEP_TIME = (5, 10)
+UPDATE_TIMEOUT = 4
+UPDATE_JITTER = 3
 
 # Keep your enemies close
 TARGETS = {

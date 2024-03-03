@@ -23,15 +23,15 @@ Telegram UserBot to support your friends and irritate your enemies by emoji reac
 Example of `.env` content:
 
 ```
-api_id = 123456
-api_hash = "12345a678b9c0d12ef123g45ef678g90"
+API_ID = 123456
+API_HASH = "12345a678b9c0d12ef123g45ef678g90"
 ```
 
 4. **Edit** `const.py` for your needs:
 
 - Change `MESSAGE_MEMORY_SIZE` `(DEFAULT=10)` to track more messages for emoji updates.
-- Change `REFRESH_SLEEP_TIME` `(DEFAULT=(5, 10))` to set the timeout `(FROM, TO)` `in seconds` between emoji updating
-  actions.
+- Change `UPDATE_TIMEOUT` `(DEFAULT=4)` to set the timeout between updates `in seconds` between emoji updating actions.
+- Change `UPDATE_JITTER` `(DEFAULT=3)` to set the maximum delay after `UPDATE_TIMEOUT` `in seconds` for timer variability.
 - Change `TARGETS` dictionary `DEFAULT format is provided in const.py` to set your target list.
 - Change `RESPONSE_TO_ENEMY` and `RESPONSE_TO_ENEMY` emoji list `DEFAULT format is provided in const.py` to set the
   emoji list.

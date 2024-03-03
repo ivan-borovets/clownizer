@@ -1,6 +1,7 @@
 import asyncio
 import os
 import random
+import uvloop
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from collections import deque
@@ -15,6 +16,7 @@ from pyrogram.raw.types import ReactionEmoji
 import const
 
 load_dotenv()
+uvloop.install()
 app = Client(name="my_account",
              api_id=os.getenv('API_ID'),
              api_hash=os.getenv('API_HASH'), )

@@ -98,7 +98,9 @@ async def main():
         app.add_handler(MessageHandler(ResponseHandler.message_handler))
         scheduler = AsyncIOScheduler()
         trigger = IntervalTrigger(seconds=const.UPDATE_TIMEOUT, jitter=const.UPDATE_JITTER)
-        scheduler.add_job(ResponseUpdater.update_response, trigger, args=[app, ])
+        scheduler.add_job(ResponseUpdater.update_response,
+                          trigger, args=[app, ],
+                          id="1", replace_existing=True)
         scheduler.start()
         await idle()
 

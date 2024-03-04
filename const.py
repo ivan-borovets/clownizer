@@ -20,8 +20,8 @@ TARGETS = {
     # 456789012: ("Bob", UserStatus.FRIEND),
 }
 
-RESPONSE_TO_ENEMY = ('💩', '🖕', '🤮', '🤣', '🍌', '💊', '😐', '💅', '🦄', '👎',)
-RESPONSE_TO_FRIEND = ('👍', '🔥', '🫡', '🤗', '⚡', '🤝', '😍', '🎉', '👏',)
+RESPONSE_TO_ENEMY = ('🤡', '💩', '🖕', '🤮', '🤣', '🍌', '💊', '🌭', '😐', '💅', '🦄', '👎', '🗿', '🆒',)
+RESPONSE_TO_FRIEND = ('👍', '❤️', '🔥', '🫡', '💯', '🤗', '⚡', '🤝', '😍', '🎉', '👏',)
 
 # Don't try these, they are broken
-# RESPONSES_BROKEN = ('️💯', '❤️',)
+# RESPONSES_BROKEN = ('⛄️', '🎅',)

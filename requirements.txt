@@ -1,4 +1,11 @@
 APScheduler==3.10.4
+black==24.2.0
+click==8.1.7
+loguru==0.7.2
+mypy-extensions==1.0.0
+packaging==23.2
+pathspec==0.12.1
+platformdirs==4.2.0
 pyaes==1.6.1
 Pyrogram==2.0.106
 PySocks==1.7.1

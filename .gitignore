@@ -2,8 +2,7 @@
 .idea
 .venv
 .env
-.MyConstPy
-.TemplateConstPy
 my_account.session
 my_account.session-journal
-test_main.py
+custom/
+logs/

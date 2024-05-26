@@ -11,3 +11,5 @@ class CustomClient(Client):
             api_id=self.user_settings.api_id,
             api_hash=self.user_settings.api_hash,
         )
+        self.chat_info_map: dict = {}
+        self.chat_emoticons_map: dict = {}

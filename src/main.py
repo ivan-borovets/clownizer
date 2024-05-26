@@ -9,7 +9,10 @@ from src.message_emoji_responder import MessageEmojiResponder
 from src.user_settings import UserSettings
 
 
-def register_msg_handler(custom_client: CustomClient, func: Callable):
+def register_msg_handler(custom_client: CustomClient, func: Callable) -> None:
+    """
+    Registers message handler with a given function in a provided client
+    """
     pyrogram_response_handler: MessageHandler = MessageHandler(func)
     custom_client.add_handler(pyrogram_response_handler)
 

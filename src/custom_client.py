@@ -1,6 +1,5 @@
 import random
 from typing import Callable, Sequence
-
 from pyrogram import Client
 from pyrogram.types import User
 
@@ -8,15 +7,19 @@ from src.user_settings import UserSettings
 
 
 class CustomClient(Client):
-    def __init__(self, name: str, user_settings: UserSettings) -> None:
+    def __init__(
+        self, name: str, user_settings: UserSettings, sleep_threshold: int = 10
+    ) -> None:
         self.user_settings: UserSettings = user_settings
         super().__init__(
             name=name,
             api_id=self.user_settings.api_id,
             api_hash=self.user_settings.api_hash,
+            sleep_threshold=sleep_threshold,
         )
         self.chat_info_map: dict = {}
         self.chat_emoticons_map: dict = {}
+        self.chat_peer_map: dict = {}
         self.is_premium: bool | None = None
         self.emoticon_picker: Callable[[Sequence[str]], list[str]] | None = None
 

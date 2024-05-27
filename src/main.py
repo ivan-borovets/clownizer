@@ -19,7 +19,9 @@ def register_msg_handler(custom_client: CustomClient, func: Callable) -> None:
 
 user_settings: UserSettings = UserSettings.from_config(config_file="./config.yaml")
 uvloop.install()  # https://docs.pyrogram.org/topics/speedups
-client: CustomClient = CustomClient(name="my_app", user_settings=user_settings)
+client: CustomClient = CustomClient(
+    name="my_app", user_settings=user_settings, sleep_threshold=0
+)
 
 
 async def main():

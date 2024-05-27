@@ -53,6 +53,12 @@ class MessageEmojiManager:
             message=message,
             emojis=response_emojis,
         )
+        cls._log_method_success(
+            method_name="respond",
+            custom_client=custom_client,
+            message=message,
+            picked_response_emoticons=picked_response_emoticons,
+        )
 
     @classmethod
     def _get_response_emoticons(
@@ -228,7 +234,6 @@ class MessageEmojiManager:
             return
         chat_peer: Peer = await custom_client.resolve_peer(peer_id=chat_id)
         custom_client.chat_peer_map.setdefault(chat_id, chat_peer)
-        print(chat_peer)
         return
 
     @classmethod
@@ -318,3 +323,26 @@ class MessageEmojiManager:
             else "No Name"
         )
         return chat_title
+
+    @classmethod
+    def _log_method_success(
+        cls,
+        method_name: str,
+        custom_client: CustomClient,
+        message: Message,
+        picked_response_emoticons: list[str],
+    ) -> None:
+        """
+        Logs a successful method execution
+        """
+        chat_id: int = cls._chat_id_from_msg(message=message)
+        chat_title: str = cls._chat_title_from_chat_id(
+            custom_client=custom_client, chat_id=chat_id
+        )
+        recipient_name: str = cls._sender_name_from_message(message=message)
+        response_emoticons: str = ", ".join(picked_response_emoticons)
+        url = message.link if message.link and "-" not in message.link else "NoURL"
+        log_msg = (
+            f"{method_name}|{recipient_name}|{chat_title}|{response_emoticons}|{url}"
+        )
+        logger.success(log_msg)

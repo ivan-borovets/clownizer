@@ -35,6 +35,56 @@ class MessageEmojiManager:
         return message.chat.id
 
     @classmethod
+    def _is_chat_private(cls, chat_id: int) -> bool:
+        """
+        Determines whether the chat is private
+        """
+        return chat_id > 0
+
+    @classmethod
+    def _sender_id_from_message(cls, message: Message) -> int:
+        """
+        Returns sender id for a given message
+        """
+        return message.from_user.id
+
+    @classmethod
+    def _sender_name_from_message(cls, message: Message) -> str:
+        """
+        Returns sender name for a given message
+        """
+        first_name = message.from_user.first_name or ""
+        last_name = message.from_user.last_name or ""
+        full_name = (
+            f"{first_name} {last_name}".strip()
+            if first_name or last_name
+            else "No Name"
+        )
+        return full_name
+
+    @classmethod
+    def _sender_is_friend(cls, custom_client: CustomClient, sender_id: int) -> bool:
+        """
+        For a given sender returns the friendship status
+        """
+        sender_info = custom_client.user_settings.targets.get(sender_id)
+        _, status = sender_info
+        return status == constants.FriendshipStatus.FRIEND
+
+    @classmethod
+    def _emoticons_from_friendship(
+        cls, custom_client: CustomClient, is_friend: bool
+    ) -> tuple[str]:
+        """
+        For a given friendship status of a target returns corresponding emoticons
+        """
+        return (
+            custom_client.user_settings.emoticons_for_friends
+            if is_friend
+            else custom_client.user_settings.emoticons_for_friends
+        )
+
+    @classmethod
     async def _write_chat_info_from_id(
         cls, custom_client: CustomClient, chat_id: int
     ) -> None:

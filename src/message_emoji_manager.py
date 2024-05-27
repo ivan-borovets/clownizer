@@ -1,9 +1,12 @@
-from typing import Any
+from pyrogram.errors import ReactionInvalid, MessageNotModified
+from pyrogram.raw import functions
+from pyrogram.raw.types import ReactionEmoji
 from pyrogram.types import Message, Chat, Reaction, ChatReactions
 from typing import Any, Sequence
 
 from src import constants
 from src.custom_client import CustomClient
+from src.loggers import logger
 
 
 class MessageEmojiManager:
@@ -172,3 +175,45 @@ class MessageEmojiManager:
             else "No Name"
         )
         return chat_title
+
+    @staticmethod
+    def _convert_emoticons_to_emojis(emoticons: Sequence[str]) -> list[ReactionEmoji]:
+        """
+        Converts emoticons of type string into ReactionEmojis
+        """
+        return [ReactionEmoji(emoticon=emoticon) for emoticon in emoticons]
+
+    @staticmethod
+    def _convert_emojis_to_emoticons(emojis: Sequence[ReactionEmoji]) -> list[str]:
+        """
+        Converts ReactionEmojis into emoticons of type string
+        """
+        return [emoji.emoticon for emoji in emojis]
+
+    @classmethod
+    async def _place_emojis(
+        cls, custom_client: CustomClient, message: Message, emojis: list[ReactionEmoji]
+    ) -> None:
+        """
+        Places ReactionEmojis from a list of ReactionEmojis on message if possible
+        """
+        try:
+            await custom_client.invoke(
+                functions.messages.SendReaction(
+                    peer=await custom_client.resolve_peer(
+                        peer_id=cls._chat_id_from_msg(message=message)
+                    ),
+                    msg_id=message.id,
+                    add_to_recent=True,
+                    reaction=emojis,
+                )
+            )
+        except ReactionInvalid:
+            emoticons = ", ".join(cls._convert_emojis_to_emoticons(emojis))
+            logger.error(
+                f"Reactions {emoticons} were not sent!\n"
+                f"Some of these reactions are invalid in this chat.\n"
+                f"You can try to correct the config file."
+            )
+        except MessageNotModified:
+            logger.error("Message was not modified. The modification is outdated.")

@@ -18,17 +18,43 @@ class MessageEmojiManager:
         if getattr(message, "from_user", None) is None or not message.from_user:
             return
         chat_id: int = cls._chat_id_from_msg(message=message)
+        chat_is_private: bool = cls._is_chat_private(chat_id)
+        if (
+            not chat_is_private
+            and chat_id not in custom_client.user_settings.chats_allowed
+        ):
+            return
+        sender_id: int = cls._sender_id_from_message(message=message)
+        if sender_id not in custom_client.user_settings.targets:
+            return
         await cls._write_chat_info_from_id(custom_client=custom_client, chat_id=chat_id)
-        print(
-            "emoticons",
-            cls._chat_emoticons_from_chat_id(
-                custom_client=custom_client, chat_id=chat_id
-            ),
+        emoticons_allowed: tuple[str] | None = cls._chat_emoticons_from_chat_id(
+            custom_client=custom_client, chat_id=chat_id
         )
-        print(
-            "chat_title",
-            cls._chat_title_from_chat_id(custom_client=custom_client, chat_id=chat_id),
+        if emoticons_allowed is None:
+            return
+        sender_is_friend: bool = cls._sender_is_friend(
+            custom_client=custom_client, sender_id=sender_id
         )
+        emoticons_from_friendship: tuple[str] = cls._emoticons_from_friendship(
+            custom_client=custom_client, is_friend=sender_is_friend
+        )
+        response_emoticons: tuple = tuple(
+            set(emoticons_allowed) & set(emoticons_from_friendship)
+        )
+        if not response_emoticons:
+            return
+        temp_filter = response_emoticons[:3]
+        response_emojis: list[ReactionEmoji] = cls._convert_emoticons_to_emojis(
+            emoticons=temp_filter
+        )
+        await cls._place_emojis(
+            custom_client=custom_client, message=message, emojis=response_emojis
+        )
+
+        print("chat id", chat_id)
+        print("sender id", sender_id)
+        print("emo", temp_filter)
 
     @classmethod
     def _chat_id_from_msg(cls, message: Message) -> int:

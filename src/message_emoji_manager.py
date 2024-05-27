@@ -12,57 +12,59 @@ from src.loggers import logger
 
 
 class MessageEmojiManager:
-    @classmethod
-    async def respond(cls, custom_client: CustomClient, message: Message) -> None:
+    async def respond(self, custom_client: CustomClient, message: Message) -> None:
         """
         Processes incoming messages to place emojis as a response
         """
-        if not cls._is_valid_message(message=message):
+        if not self._is_valid_message(message=message):
             return
 
-        chat_id: int = cls._chat_id_from_msg(message=message)
-        if not cls._is_allowed_chat(custom_client=custom_client, chat_id=chat_id):
+        chat_id: int = self._chat_id_from_msg(message=message)
+        if not self._is_allowed_chat(custom_client=custom_client, chat_id=chat_id):
             return
 
-        sender_id: int = cls._sender_id_from_message(message=message)
-        if not cls._is_target_sender(custom_client=custom_client, sender_id=sender_id):
+        sender_id: int = self._sender_id_from_message(message=message)
+        if not self._is_target_sender(custom_client=custom_client, sender_id=sender_id):
             return
 
         # for memoization and the latter functions
-        await cls._write_chat_info_from_id(custom_client=custom_client, chat_id=chat_id)
+        await self._write_chat_info_from_id(
+            custom_client=custom_client, chat_id=chat_id
+        )
 
-        response_emoticons: tuple[str] = cls._get_response_emoticons(
+        response_emoticons: tuple[str] = self._get_response_emoticons(
             custom_client=custom_client, chat_id=chat_id, sender_id=sender_id
         )
         picked_response_emoticons: list[str] = custom_client.emoticon_picker(
             response_emoticons
         )
-        response_emojis: list[ReactionEmoji] = cls._convert_emoticons_to_emojis(
+        response_emojis: list[ReactionEmoji] = self._convert_emoticons_to_emojis(
             emoticons=picked_response_emoticons
         )
 
         # for memoization and the latter functions
-        await cls._write_chat_peer_from_id(custom_client=custom_client, chat_id=chat_id)
-
-        chat_peer: Peer = cls._peer_from_chat_id(
+        await self._write_chat_peer_from_id(
             custom_client=custom_client, chat_id=chat_id
         )
-        await cls._place_emojis(
+
+        chat_peer: Peer = self._peer_from_chat_id(
+            custom_client=custom_client, chat_id=chat_id
+        )
+        await self._place_emojis(
             custom_client=custom_client,
             peer=chat_peer,
             message=message,
             emojis=response_emojis,
         )
-        cls._log_method_success(
+        self._log_method_success(
             method_name="respond",
             custom_client=custom_client,
             message=message,
             picked_response_emoticons=picked_response_emoticons,
         )
 
-    @classmethod
     def _get_response_emoticons(
-        cls,
+        self,
         custom_client: CustomClient,
         chat_id: int,
         sender_id: int,
@@ -71,15 +73,15 @@ class MessageEmojiManager:
         Calculates the intersection of allowed and preset emoticons
         Returns the resulting intersection as a tuple
         """
-        emoticons_allowed: tuple[str] | None = cls._chat_emoticons_from_chat_id(
+        emoticons_allowed: tuple[str] | None = self._chat_emoticons_from_chat_id(
             custom_client=custom_client, chat_id=chat_id
         )
         if emoticons_allowed is None:
             return ()
-        sender_is_friend: bool = cls._sender_is_friend(
+        sender_is_friend: bool = self._sender_is_friend(
             custom_client=custom_client, sender_id=sender_id
         )
-        emoticons_from_friendship: tuple[str] = cls._emoticons_from_friendship(
+        emoticons_from_friendship: tuple[str] = self._emoticons_from_friendship(
             custom_client=custom_client, is_friend=sender_is_friend
         )
         response_emoticons: tuple[str] = (
@@ -87,49 +89,48 @@ class MessageEmojiManager:
         )
         return response_emoticons
 
-    @classmethod
-    def _is_valid_message(cls, message: Message) -> bool:
+    @staticmethod
+    def _is_valid_message(message: Message) -> bool:
         return getattr(message, "from_user", None) is not None and message.from_user
 
-    @classmethod
-    def _chat_id_from_msg(cls, message: Message) -> int:
+    @staticmethod
+    def _chat_id_from_msg(message: Message) -> int:
         """
         Returns chat id from a provided message
         """
         return message.chat.id
 
-    @classmethod
-    def _is_allowed_chat(cls, custom_client: CustomClient, chat_id: int) -> bool:
+    def _is_allowed_chat(self, custom_client: CustomClient, chat_id: int) -> bool:
         """
         Determines whether the chat is allowed
         """
-        chat_is_private: bool = cls._is_chat_private(chat_id)
+        chat_is_private: bool = self._is_chat_private(chat_id)
         return chat_is_private or chat_id in custom_client.user_settings.chats_allowed
 
-    @classmethod
-    def _is_chat_private(cls, chat_id: int) -> bool:
+    @staticmethod
+    def _is_chat_private(chat_id: int) -> bool:
         """
         Determines whether the chat is private
         """
         return chat_id > 0
 
-    @classmethod
-    def _sender_id_from_message(cls, message: Message) -> int:
+    @staticmethod
+    def _sender_id_from_message(message: Message) -> int:
         """
         Returns sender id for a given message
         """
         return message.from_user.id
 
-    @classmethod
-    def _is_target_sender(cls, custom_client: CustomClient, sender_id: int) -> bool:
+    @staticmethod
+    def _is_target_sender(custom_client: CustomClient, sender_id: int) -> bool:
         """
         Determines whether the sender is a target
         """
         return sender_id in custom_client.user_settings.targets
 
-    @classmethod
+    @staticmethod
     async def _write_chat_info_from_id(
-        cls, custom_client: CustomClient, chat_id: int
+        custom_client: CustomClient, chat_id: int
     ) -> None:
         """
         Retrieves chat info for a given id and puts it in a client attribute
@@ -141,9 +142,9 @@ class MessageEmojiManager:
         custom_client.chat_info_map.setdefault(chat_id, chat_info)
         return
 
-    @classmethod
+    @staticmethod
     def _chat_attribute_from_chat_id(
-        cls, custom_client: CustomClient, chat_id: int, attribute: str
+        custom_client: CustomClient, chat_id: int, attribute: str
     ) -> Any:
         """
         Returns chat attribute for a given id (for a saved chat map)
@@ -151,9 +152,8 @@ class MessageEmojiManager:
         chat_info: Chat = custom_client.chat_info_map.get(chat_id)
         return getattr(chat_info, attribute, None)
 
-    @classmethod
     def _chat_emoticons_from_chat_id(
-        cls, custom_client: CustomClient, chat_id: int
+        self, custom_client: CustomClient, chat_id: int
     ) -> tuple[str] | None:
         """
         Returns a list of emoticons that are allowed in a chat with a given id
@@ -165,12 +165,12 @@ class MessageEmojiManager:
         )
         if emoticons_allowed is not None:
             return emoticons_allowed
-        available_reactions: ChatReactions = cls._chat_attribute_from_chat_id(
+        available_reactions: ChatReactions = self._chat_attribute_from_chat_id(
             custom_client=custom_client,
             chat_id=chat_id,
             attribute="available_reactions",
         )
-        chat_is_private: bool = cls._is_chat_private(chat_id)
+        chat_is_private: bool = self._is_chat_private(chat_id)
         if available_reactions is None and not chat_is_private:
             custom_client.chat_emoticons_map.setdefault(chat_id, ())
             return
@@ -186,8 +186,8 @@ class MessageEmojiManager:
         custom_client.chat_emoticons_map.setdefault(chat_id, emoticons_allowed)
         return emoticons_allowed
 
-    @classmethod
-    def _sender_is_friend(cls, custom_client: CustomClient, sender_id: int) -> bool:
+    @staticmethod
+    def _sender_is_friend(custom_client: CustomClient, sender_id: int) -> bool:
         """
         For a given sender returns the friendship status
         """
@@ -195,9 +195,9 @@ class MessageEmojiManager:
         _, status = sender_info
         return status == constants.FriendshipStatus.FRIEND
 
-    @classmethod
+    @staticmethod
     def _emoticons_from_friendship(
-        cls, custom_client: CustomClient, is_friend: bool
+        custom_client: CustomClient, is_friend: bool
     ) -> tuple[str]:
         """
         For a given friendship status of a target returns corresponding emoticons
@@ -222,9 +222,9 @@ class MessageEmojiManager:
         """
         return [emoji.emoticon for emoji in emojis]
 
-    @classmethod
+    @staticmethod
     async def _write_chat_peer_from_id(
-        cls, custom_client: CustomClient, chat_id: int
+        custom_client: CustomClient, chat_id: int
     ) -> None:
         """
         Retrieves chat peer for a given id and puts it in a client attribute
@@ -236,17 +236,16 @@ class MessageEmojiManager:
         custom_client.chat_peer_map.setdefault(chat_id, chat_peer)
         return
 
-    @classmethod
-    def _peer_from_chat_id(cls, custom_client: CustomClient, chat_id: int) -> Peer:
+    @staticmethod
+    def _peer_from_chat_id(custom_client: CustomClient, chat_id: int) -> Peer:
         """
         Returns chat peer for a given id
         """
         peer: Peer = custom_client.chat_peer_map.get(chat_id)
         return peer
 
-    @classmethod
     async def _place_emojis(
-        cls,
+        self,
         custom_client: CustomClient,
         peer: Peer,
         message: Message,
@@ -267,7 +266,7 @@ class MessageEmojiManager:
                 )
                 break
             except ReactionInvalid:
-                emoticons = ", ".join(cls._convert_emojis_to_emoticons(emojis))
+                emoticons = ", ".join(self._convert_emojis_to_emoticons(emojis))
                 logger.error(
                     f"Reactions {emoticons} were not sent!\n"
                     f"Some of these reactions are invalid in this chat.\n"
@@ -280,8 +279,8 @@ class MessageEmojiManager:
             except FloodWait as f:
                 await FloodWaitManager.handle(f)
 
-    @classmethod
-    def _sender_name_from_message(cls, message: Message) -> str:
+    @staticmethod
+    def _sender_name_from_message(message: Message) -> str:
         """
         Returns sender name for a given message
         """
@@ -294,25 +293,24 @@ class MessageEmojiManager:
         )
         return full_name
 
-    @classmethod
-    def _chat_title_from_chat_id(cls, custom_client, chat_id: int) -> str:
+    def _chat_title_from_chat_id(self, custom_client, chat_id: int) -> str:
         """
         Returns chat title for a given id
         """
-        chat_is_private: bool = cls._is_chat_private(chat_id)
+        chat_is_private: bool = self._is_chat_private(chat_id)
         if not chat_is_private:
-            chat_title: str = cls._chat_attribute_from_chat_id(
+            chat_title: str = self._chat_attribute_from_chat_id(
                 custom_client=custom_client, chat_id=chat_id, attribute="title"
             )
             return chat_title
         first_name = (
-            cls._chat_attribute_from_chat_id(
+            self._chat_attribute_from_chat_id(
                 custom_client=custom_client, chat_id=chat_id, attribute="first_name"
             )
             or ""
         )
         last_name = (
-            cls._chat_attribute_from_chat_id(
+            self._chat_attribute_from_chat_id(
                 custom_client=custom_client, chat_id=chat_id, attribute="last_name"
             )
             or ""
@@ -324,9 +322,8 @@ class MessageEmojiManager:
         )
         return chat_title
 
-    @classmethod
     def _log_method_success(
-        cls,
+        self,
         method_name: str,
         custom_client: CustomClient,
         message: Message,
@@ -335,11 +332,11 @@ class MessageEmojiManager:
         """
         Logs a successful method execution
         """
-        chat_id: int = cls._chat_id_from_msg(message=message)
-        chat_title: str = cls._chat_title_from_chat_id(
+        chat_id: int = self._chat_id_from_msg(message=message)
+        chat_title: str = self._chat_title_from_chat_id(
             custom_client=custom_client, chat_id=chat_id
         )
-        recipient_name: str = cls._sender_name_from_message(message=message)
+        recipient_name: str = self._sender_name_from_message(message=message)
         response_emoticons: str = ", ".join(picked_response_emoticons)
         url = message.link if message.link and "-" not in message.link else "NoURL"
         log_msg = (

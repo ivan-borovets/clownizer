@@ -22,13 +22,14 @@ uvloop.install()  # https://docs.pyrogram.org/topics/speedups
 client: CustomClient = CustomClient(
     name="my_app", user_settings=user_settings, sleep_threshold=0
 )
+message_emoji_manager: MessageEmojiManager = MessageEmojiManager()
 
 
 async def main():
     async with client:
         await client.set_emoticon_picker()
         logger.success("Telegram auth completed successfully!")
-        register_msg_handler(custom_client=client, func=MessageEmojiManager.respond)
+        register_msg_handler(custom_client=client, func=message_emoji_manager.respond)
         await idle()
 
 

@@ -1,11 +1,13 @@
-from pyrogram.errors import ReactionInvalid, MessageNotModified
+from pyrogram.errors import ReactionInvalid, MessageNotModified, FloodWait
 from pyrogram.raw import functions
+from pyrogram.raw.base import Peer
 from pyrogram.raw.types import ReactionEmoji
 from pyrogram.types import Message, Chat, Reaction, ChatReactions
 from typing import Any, Sequence
 
 from src import constants
 from src.custom_client import CustomClient
+from src.floodwait_manager import FloodWaitManager
 from src.loggers import logger
 
 
@@ -44,17 +46,22 @@ class MessageEmojiManager:
         )
         if not response_emoticons:
             return
-        picked_response_emoticons: list[str] = custom_client.emoticon_picker(response_emoticons)
+        picked_response_emoticons: list[str] = custom_client.emoticon_picker(
+            response_emoticons
+        )
         response_emojis: list[ReactionEmoji] = cls._convert_emoticons_to_emojis(
             emoticons=picked_response_emoticons
         )
-        await cls._place_emojis(
-            custom_client=custom_client, message=message, emojis=response_emojis
+        await cls._write_chat_peer_from_id(custom_client=custom_client, chat_id=chat_id)
+        chat_peer: Peer = cls._peer_from_chat_id(
+            custom_client=custom_client, chat_id=chat_id
         )
-
-        print("chat id", chat_id)
-        print("sender id", sender_id)
-        print("emo", picked_response_emoticons)
+        await cls._place_emojis(
+            custom_client=custom_client,
+            peer=chat_peer,
+            message=message,
+            emojis=response_emojis,
+        )
 
     @classmethod
     def _chat_id_from_msg(cls, message: Message) -> int:
@@ -125,6 +132,21 @@ class MessageEmojiManager:
             return
         chat_info: Chat = await custom_client.get_chat(chat_id=chat_id)
         custom_client.chat_info_map.setdefault(chat_id, chat_info)
+        return
+
+    @classmethod
+    async def _write_chat_peer_from_id(
+        cls, custom_client: CustomClient, chat_id: int
+    ) -> None:
+        """
+        Retrieves chat peer for a given id and puts it in a client attribute
+        """
+        chat_peer: Peer = custom_client.chat_peer_map.get(chat_id, None)
+        if chat_peer is not None:
+            return
+        chat_peer: Peer = await custom_client.resolve_peer(peer_id=chat_id)
+        custom_client.chat_peer_map.setdefault(chat_id, chat_peer)
+        print(chat_peer)
         return
 
     @classmethod
@@ -202,6 +224,14 @@ class MessageEmojiManager:
         )
         return chat_title
 
+    @classmethod
+    def _peer_from_chat_id(cls, custom_client: CustomClient, chat_id: int) -> Peer:
+        """
+        Returns chat peer for a given id
+        """
+        peer: Peer = custom_client.chat_peer_map.get(chat_id)
+        return peer
+
     @staticmethod
     def _convert_emoticons_to_emojis(emoticons: Sequence[str]) -> list[ReactionEmoji]:
         """
@@ -218,28 +248,36 @@ class MessageEmojiManager:
 
     @classmethod
     async def _place_emojis(
-        cls, custom_client: CustomClient, message: Message, emojis: list[ReactionEmoji]
+        cls,
+        custom_client: CustomClient,
+        peer: Peer,
+        message: Message,
+        emojis: list[ReactionEmoji],
     ) -> None:
         """
         Places ReactionEmojis from a list of ReactionEmojis on message if possible
         """
-        try:
-            await custom_client.invoke(
-                functions.messages.SendReaction(
-                    peer=await custom_client.resolve_peer(
-                        peer_id=cls._chat_id_from_msg(message=message)
-                    ),
-                    msg_id=message.id,
-                    add_to_recent=True,
-                    reaction=emojis,
+        while True:
+            try:
+                await custom_client.invoke(
+                    functions.messages.SendReaction(
+                        peer=peer,
+                        msg_id=message.id,
+                        add_to_recent=True,
+                        reaction=emojis,
+                    )
                 )
-            )
-        except ReactionInvalid:
-            emoticons = ", ".join(cls._convert_emojis_to_emoticons(emojis))
-            logger.error(
-                f"Reactions {emoticons} were not sent!\n"
-                f"Some of these reactions are invalid in this chat.\n"
-                f"You can try to correct the config file."
-            )
-        except MessageNotModified:
-            logger.error("Message was not modified. The modification is outdated.")
+                break
+            except ReactionInvalid:
+                emoticons = ", ".join(cls._convert_emojis_to_emoticons(emojis))
+                logger.error(
+                    f"Reactions {emoticons} were not sent!\n"
+                    f"Some of these reactions are invalid in this chat.\n"
+                    f"You can try to correct the config file."
+                )
+                break
+            except MessageNotModified:
+                logger.error("Message was not modified. The modification is outdated.")
+                break
+            except FloodWait as f:
+                await FloodWaitManager.handle(f)

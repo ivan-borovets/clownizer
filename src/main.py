@@ -20,12 +20,13 @@ def register_msg_handler(custom_client: CustomClient, func: Callable) -> None:
 user_settings: UserSettings = UserSettings.from_config(config_file="./config.yaml")
 uvloop.install()  # https://docs.pyrogram.org/topics/speedups
 client: CustomClient = CustomClient(name="my_app", user_settings=user_settings)
-register_msg_handler(custom_client=client, func=MessageEmojiManager.respond)
 
 
 async def main():
     async with client:
+        await client.set_premium()
         logger.success("Telegram auth completed successfully!")
+        register_msg_handler(custom_client=client, func=MessageEmojiManager.respond)
         await idle()
 
 

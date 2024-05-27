@@ -1,6 +1,6 @@
 from typing import Any
 from pyrogram.types import Message, Chat, Reaction, ChatReactions
-from pyrogram.enums import ChatType
+from typing import Any, Sequence
 
 from src import constants
 from src.custom_client import CustomClient
@@ -53,7 +53,7 @@ class MessageEmojiManager:
         cls, custom_client: CustomClient, chat_id: int, attribute: str
     ) -> Any:
         """
-        Returns chat attribute for a given id
+        Returns chat attribute for a given id (for a saved chat map)
         """
         chat_info: Chat = custom_client.chat_info_map.get(chat_id)
         return getattr(chat_info, attribute, None)
@@ -63,9 +63,9 @@ class MessageEmojiManager:
         cls, custom_client: CustomClient, chat_id: int
     ) -> tuple[str] | None:
         """
-        Returns a list of emoticons that are allowed in a chat with a given id.
+        Returns a list of emoticons that are allowed in a chat with a given id
 
-        The confusing logic is due to the different structure of the response depending on the chat settings.
+        The confusing logic is due to the different structure of the response depending on the chat settings
         """
         emoticons_allowed: tuple[str] | None = custom_client.chat_emoticons_map.get(
             chat_id, None
@@ -77,13 +77,11 @@ class MessageEmojiManager:
             chat_id=chat_id,
             attribute="available_reactions",
         )
-        chat_type: ChatType = cls._chat_attribute_from_chat_id(
-            custom_client=custom_client, chat_id=chat_id, attribute="type"
-        )
-        if available_reactions is None and chat_type != ChatType.PRIVATE:
+        chat_is_private: bool = cls._is_chat_private(chat_id)
+        if available_reactions is None and not chat_is_private:
             custom_client.chat_emoticons_map.setdefault(chat_id, ())
             return
-        if chat_type == ChatType.PRIVATE or available_reactions.all_are_enabled:
+        if chat_is_private or available_reactions.all_are_enabled:
             custom_client.chat_emoticons_map.setdefault(
                 chat_id, constants.VALID_EMOTICONS
             )
@@ -100,10 +98,8 @@ class MessageEmojiManager:
         """
         Returns chat title for a given id
         """
-        chat_type: ChatType = cls._chat_attribute_from_chat_id(
-            custom_client=custom_client, chat_id=chat_id, attribute="type"
-        )
-        if chat_type != ChatType.PRIVATE:
+        chat_is_private: bool = cls._is_chat_private(chat_id)
+        if not chat_is_private:
             chat_title: str = cls._chat_attribute_from_chat_id(
                 custom_client=custom_client, chat_id=chat_id, attribute="title"
             )
@@ -121,6 +117,8 @@ class MessageEmojiManager:
             or ""
         )
         chat_title = (
-            f"{first_name} {last_name}" if first_name and last_name else "No Name"
+            f"{first_name} {last_name}".strip()
+            if first_name or last_name
+            else "No Name"
         )
         return chat_title

@@ -1,3 +1,39 @@
 ---
 api_id: 123456
 api_hash: 12345a678b9c0d12ef123g45ef678g90
+chats_allowed:
+  "-12345": Test Chat Name
+targets:
+  "123456789":
+    - Alice
+    - Enemy
+  "234567890":
+    - Bob
+    - Friend
+emoticons_for_enemies:
+  - 🤡
+  - 💩
+  - 🖕
+  - 🤮
+  - 🤣
+  - 🍌
+  - 💊
+  - 🌭
+  - 😐
+  - 💅
+  - 🦄
+  - 👎
+  - 🗿
+  - 🆒
+emoticons_for_friends:
+  - 👍
+  - ❤
+  - 🔥
+  - 🫡
+  - 💯
+  - 🤗
+  - ⚡
+  - 🤝
+  - 😍
+  - 🎉
+  - 👏

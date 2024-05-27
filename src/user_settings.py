@@ -1,12 +1,17 @@
 import yaml
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, field_validator
 
+from src import constants
 from src.loggers import logger
 
 
 class UserSettings(BaseModel):
     api_id: int
     api_hash: str
+    chats_allowed: dict[int, str] | None
+    targets: dict[int, tuple[str, constants.FriendshipStatus]]
+    emoticons_for_enemies: tuple[str, ...]
+    emoticons_for_friends: tuple[str, ...]
 
     @classmethod
     def from_config(cls, config_file: str) -> "UserSettings":
@@ -31,3 +36,25 @@ class UserSettings(BaseModel):
         with open(file=yaml_file, mode="r", encoding="utf-8") as file:
             yaml_dict = yaml.safe_load(file)
         return yaml_dict
+
+    @field_validator("emoticons_for_enemies")
+    def validate_enemy_emo(cls, v):
+        for emoticon in v:
+            if emoticon not in constants.VALID_EMOTICONS:
+                raise ValueError(f"{emoticon} in `emoticons_for_enemies` is not valid!")
+        return v
+
+    @field_validator("emoticons_for_friends")
+    def validate_friend_emo(cls, v):
+        for emoticon in v:
+            if emoticon not in constants.VALID_EMOTICONS:
+                raise ValueError(f"{emoticon} in `emoticons_for_friends` is not valid!")
+        return v
+
+    @field_validator("targets", "emoticons_for_enemies", "emoticons_for_friends")
+    def validate_length(cls, v):
+        if len(v) == 0:
+            raise ValueError(
+                "The length of the `targets` and `emoticons` should be greater than 0!"
+            )
+        return v

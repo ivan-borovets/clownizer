@@ -24,7 +24,7 @@ client: CustomClient = CustomClient(name="my_app", user_settings=user_settings)
 
 async def main():
     async with client:
-        await client.set_premium()
+        await client.set_emoticon_picker()
         logger.success("Telegram auth completed successfully!")
         register_msg_handler(custom_client=client, func=MessageEmojiManager.respond)
         await idle()

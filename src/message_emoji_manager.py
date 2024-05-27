@@ -39,14 +39,14 @@ class MessageEmojiManager:
         emoticons_from_friendship: tuple[str] = cls._emoticons_from_friendship(
             custom_client=custom_client, is_friend=sender_is_friend
         )
-        response_emoticons: tuple = tuple(
+        response_emoticons: tuple[str] = tuple(
             set(emoticons_allowed) & set(emoticons_from_friendship)
         )
         if not response_emoticons:
             return
-        temp_filter = response_emoticons[:3]
+        picked_response_emoticons: list[str] = custom_client.emoticon_picker(response_emoticons)
         response_emojis: list[ReactionEmoji] = cls._convert_emoticons_to_emojis(
-            emoticons=temp_filter
+            emoticons=picked_response_emoticons
         )
         await cls._place_emojis(
             custom_client=custom_client, message=message, emojis=response_emojis
@@ -54,7 +54,7 @@ class MessageEmojiManager:
 
         print("chat id", chat_id)
         print("sender id", sender_id)
-        print("emo", temp_filter)
+        print("emo", picked_response_emoticons)
 
     @classmethod
     def _chat_id_from_msg(cls, message: Message) -> int:

@@ -7,6 +7,7 @@ from pyrogram.types import Message, Chat, Reaction, ChatReactions
 from typing import Any, Sequence
 
 from src import constants
+from src.constants import FriendshipStatus
 from src.custom_client import CustomClient
 from src.floodwait_manager import FloodWaitManager
 from src.loggers import logger
@@ -195,7 +196,7 @@ class MessageEmojiManager:
         """
         For a given sender returns the friendship status
         """
-        sender_info = custom_client.user_settings.targets.get(sender_id)
+        sender_info: tuple[str, FriendshipStatus] = custom_client.user_settings.targets.get(sender_id)
         _, status = sender_info
         return status == constants.FriendshipStatus.FRIEND
 
@@ -209,7 +210,7 @@ class MessageEmojiManager:
         return (
             custom_client.user_settings.emoticons_for_friends
             if is_friend
-            else custom_client.user_settings.emoticons_for_friends
+            else custom_client.user_settings.emoticons_for_enemies
         )
 
     @staticmethod

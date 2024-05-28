@@ -1,0 +1,16 @@
+services:
+  clownizer:
+    image: ivanborovets/clownizer_2:latest
+    build: .
+    container_name: clownizer
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./src/config.yaml:/app/src/config.yaml:ro
+      - ./logs:/app/logs
+      - clownizer-session:/app/src
+    stdin_open: true
+    tty: true
+    command: [ "poetry", "run", "python", "main.py" ]
+
+volumes:
+  clownizer-session:

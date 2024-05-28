@@ -359,8 +359,10 @@ class MessageEmojiManager:
         )
         if not message:
             return
-        print(message.chat.id, message.id)
-        print(custom_client.msg_keeper)
+        new_response_emoticons: list[str] = self._generate_different_emoticons(
+            custom_client=custom_client, message=message
+        )
+        print(new_response_emoticons)
 
     async def _get_random_msg_from_queue(
         self, custom_client: CustomClient
@@ -399,3 +401,28 @@ class MessageEmojiManager:
                 return message
             except FloodWait as f:
                 await FloodWaitManager.handle(f)
+
+    def _generate_different_emoticons(
+        self, custom_client: CustomClient, message: Message
+    ) -> list[str]:
+        """
+        Gets a message and generates a new set of reaction emoticons as a list
+        """
+        chat_id: int = self._chat_id_from_msg(message=message)
+        sender_id: int = self._sender_id_from_message(message=message)
+        msg_reactions: list[Reaction] = message.reactions.reactions
+        msg_emoticons_set: set[str] = {reaction.emoji for reaction in msg_reactions}
+        while True:
+            new_response_emoticons: tuple[str] = self._get_response_emoticons(
+                custom_client=custom_client, chat_id=chat_id, sender_id=sender_id
+            )
+            new_picked_response_emoticons_set: set[str] = set(
+                custom_client.emoticon_picker(new_response_emoticons)
+            )
+            if msg_emoticons_set == new_picked_response_emoticons_set:
+                logger.info(
+                    "The generated emoticons are the same as previously placed.\n"
+                    "Generating a different set of emoticons..."
+                )
+            else:
+                return list(new_picked_response_emoticons_set)

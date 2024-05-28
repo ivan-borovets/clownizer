@@ -9,6 +9,8 @@ class UserSettings(BaseModel):
     api_id: int
     api_hash: str
     msg_queue_size: int = Field(default=..., ge=1)
+    update_timeout: int = Field(default=..., ge=2)
+    update_jitter: int = Field(default=..., ge=0)
     chats_allowed: dict[int, str] | None
     targets: dict[int, tuple[str, constants.FriendshipStatus]]
     emoticons_for_enemies: tuple[str, ...]

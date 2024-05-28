@@ -1,3 +1,4 @@
+import random
 from pyrogram.errors import ReactionInvalid, MessageNotModified, FloodWait
 from pyrogram.raw import functions
 from pyrogram.raw.base import Peer
@@ -353,4 +354,48 @@ class MessageEmojiManager:
         """
         if not custom_client.msg_queue:
             return
+        message: Message | None = await self._get_random_msg_from_queue(
+            custom_client=custom_client
+        )
+        if not message:
+            return
+        print(message.chat.id, message.id)
+        print(custom_client.msg_keeper)
+
+    async def _get_random_msg_from_queue(
+        self, custom_client: CustomClient
+    ) -> Message | None:
+        """
+        Returns random message from a custom client message queue with ids tuples
+        """
+        msg_queue_container: tuple[int] = random.choice(custom_client.msg_queue)
+        message: Message | None = custom_client.msg_keeper.get(
+            msg_queue_container, None
+        )
+        if message:
+            return message
+        message = await self._get_message_from_client(
+            custom_client=custom_client, msg_queue_container=msg_queue_container
+        )
+        if message:
+            custom_client.msg_keeper.setdefault(
+                key=msg_queue_container, default=message
+            )
+            return message
         return
+
+    @staticmethod
+    async def _get_message_from_client(
+        custom_client: CustomClient, msg_queue_container: tuple[int]
+    ) -> Message | None:
+        """
+        Returns a message through a client request with ids tuple
+        """
+        while True:
+            try:
+                message: Message = await custom_client.get_messages(
+                    *msg_queue_container
+                )
+                return message
+            except FloodWait as f:
+                await FloodWaitManager.handle(f)

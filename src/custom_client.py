@@ -1,5 +1,6 @@
 import random
 from collections import deque
+from cachetools import LRUCache
 from typing import Callable, Sequence
 from pyrogram import Client
 from pyrogram.types import User
@@ -25,6 +26,7 @@ class CustomClient(Client):
         self.is_premium: bool | None = None
         self.emoticon_picker: Callable[[Sequence[str]], list[str]] | None = None
         self.msg_queue: deque = deque(maxlen=self.user_settings.msg_queue_size)
+        self.msg_keeper: LRUCache = LRUCache(maxsize=self.user_settings.msg_queue_size)
         self.scheduler: CustomScheduler = CustomScheduler(
             user_settings=self.user_settings
         )

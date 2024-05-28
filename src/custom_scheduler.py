@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from src.user_settings import UserSettings
+from user_settings import UserSettings
 
 
 class CustomScheduler(AsyncIOScheduler):

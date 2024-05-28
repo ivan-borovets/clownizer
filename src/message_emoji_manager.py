@@ -6,11 +6,11 @@ from pyrogram.raw.types import ReactionEmoji
 from pyrogram.types import Message, Chat, Reaction, ChatReactions
 from typing import Any, Sequence
 
-from src import constants
-from src.constants import FriendshipStatus
-from src.custom_client import CustomClient
-from src.floodwait_manager import FloodWaitManager
-from src.loggers import logger
+import constants
+from constants import FriendshipStatus
+from custom_client import CustomClient
+from floodwait_manager import FloodWaitManager
+from loggers import logger
 
 
 class MessageEmojiManager:

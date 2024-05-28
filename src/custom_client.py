@@ -5,8 +5,8 @@ from typing import Callable, Sequence
 from pyrogram import Client
 from pyrogram.types import User
 
-from src.user_settings import UserSettings
-from src.custom_scheduler import CustomScheduler
+from user_settings import UserSettings
+from custom_scheduler import CustomScheduler
 
 
 class CustomClient(Client):

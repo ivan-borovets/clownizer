@@ -3,10 +3,10 @@ from pyrogram import idle
 from pyrogram.handlers import MessageHandler
 from typing import Callable
 
-from src.loggers import logger
-from src.custom_client import CustomClient
-from src.message_emoji_manager import MessageEmojiManager
-from src.user_settings import UserSettings
+from loggers import logger
+from custom_client import CustomClient
+from message_emoji_manager import MessageEmojiManager
+from user_settings import UserSettings
 
 
 def register_msg_handler(custom_client: CustomClient, func: Callable) -> None:

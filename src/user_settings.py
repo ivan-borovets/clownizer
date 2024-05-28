@@ -1,8 +1,8 @@
 import yaml
 from pydantic import BaseModel, ValidationError, field_validator, Field
 
-from src import constants
-from src.loggers import logger
+import constants
+from loggers import logger
 
 
 class UserSettings(BaseModel):

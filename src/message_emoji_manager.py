@@ -337,7 +337,7 @@ class MessageEmojiManager:
             custom_client=custom_client, chat_id=chat_id
         )
         recipient_name: str = self._sender_name_from_message(message=message)
-        response_emoticons: str = ", ".join(picked_response_emoticons)
+        response_emoticons: str = "".join(picked_response_emoticons)
         url = message.link if message.link and "-" not in message.link else "NoURL"
         log_msg = (
             f"{method_name}|{recipient_name}|{chat_title}|{response_emoticons}|{url}"

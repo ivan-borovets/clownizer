@@ -1,4 +1,5 @@
 import random
+from collections import deque
 from typing import Callable, Sequence
 from pyrogram import Client
 from pyrogram.types import User
@@ -22,6 +23,7 @@ class CustomClient(Client):
         self.chat_peer_map: dict = {}
         self.is_premium: bool | None = None
         self.emoticon_picker: Callable[[Sequence[str]], list[str]] | None = None
+        self.msg_queue: deque = deque(maxlen=self.user_settings.msg_queue_size)
 
     async def set_emoticon_picker(self) -> None:
         """

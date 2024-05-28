@@ -1,6 +1,7 @@
 ---
 api_id: 123456
 api_hash: 12345a678b9c0d12ef123g45ef678g90
+msg_queue_size: 10
 chats_allowed:
   "-12345": Test Chat Name
 targets:

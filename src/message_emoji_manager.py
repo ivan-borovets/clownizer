@@ -62,6 +62,9 @@ class MessageEmojiManager:
             message=message,
             picked_response_emoticons=picked_response_emoticons,
         )
+        # store message ids to retrieve it later
+        msg_queue_container: tuple[int] = (chat_id, message.id)
+        custom_client.msg_queue.append(msg_queue_container)
 
     def _get_response_emoticons(
         self,

@@ -1,5 +1,5 @@
 import yaml
-from pydantic import BaseModel, ValidationError, field_validator
+from pydantic import BaseModel, ValidationError, field_validator, Field
 
 from src import constants
 from src.loggers import logger
@@ -8,6 +8,7 @@ from src.loggers import logger
 class UserSettings(BaseModel):
     api_id: int
     api_hash: str
+    msg_queue_size: int = Field(default=..., ge=1)
     chats_allowed: dict[int, str] | None
     targets: dict[int, tuple[str, constants.FriendshipStatus]]
     emoticons_for_enemies: tuple[str, ...]

@@ -268,7 +268,7 @@ class MessageEmojiManager:
                         reaction=emojis,
                     )
                 )
-                break
+                return
             except ReactionInvalid:
                 emoticons = ", ".join(self._convert_emojis_to_emoticons(emojis))
                 logger.error(
@@ -276,10 +276,10 @@ class MessageEmojiManager:
                     f"Some of these reactions are invalid in this chat.\n"
                     f"You can try to correct the config file."
                 )
-                break
+                return
             except MessageNotModified:
                 logger.error("Message was not modified. The modification is outdated.")
-                break
+                return
             except FloodWait as f:
                 await FloodWaitManager.handle(f)
 

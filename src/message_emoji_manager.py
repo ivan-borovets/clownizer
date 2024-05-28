@@ -196,7 +196,9 @@ class MessageEmojiManager:
         """
         For a given sender returns the friendship status
         """
-        sender_info: tuple[str, FriendshipStatus] = custom_client.user_settings.targets.get(sender_id)
+        sender_info: tuple[str, FriendshipStatus] = (
+            custom_client.user_settings.targets.get(sender_id)
+        )
         _, status = sender_info
         return status == constants.FriendshipStatus.FRIEND
 
@@ -282,7 +284,7 @@ class MessageEmojiManager:
                 logger.error("Message was not modified. The modification is outdated.")
                 return
             except FloodWait as f:
-                await FloodWaitManager.handle(f)
+                await FloodWaitManager.handle(f=f, custom_client=custom_client)
 
     @staticmethod
     def _sender_name_from_message(message: Message) -> str:

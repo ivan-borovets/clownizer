@@ -5,6 +5,7 @@ from pyrogram import Client
 from pyrogram.types import User
 
 from src.user_settings import UserSettings
+from src.custom_scheduler import CustomScheduler
 
 
 class CustomClient(Client):
@@ -24,6 +25,9 @@ class CustomClient(Client):
         self.is_premium: bool | None = None
         self.emoticon_picker: Callable[[Sequence[str]], list[str]] | None = None
         self.msg_queue: deque = deque(maxlen=self.user_settings.msg_queue_size)
+        self.scheduler: CustomScheduler = CustomScheduler(
+            user_settings=self.user_settings
+        )
 
     async def set_emoticon_picker(self) -> None:
         """

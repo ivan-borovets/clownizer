@@ -346,3 +346,11 @@ class MessageEmojiManager:
             f"{method_name}|{recipient_name}|{chat_title}|{response_emoticons}|{url}"
         )
         logger.success(log_msg)
+
+    async def update(self, custom_client: CustomClient) -> None:
+        """
+        Processes previously processed messages, updating emojis
+        """
+        if not custom_client.msg_queue:
+            return
+        return

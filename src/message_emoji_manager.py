@@ -363,7 +363,25 @@ class MessageEmojiManager:
         new_response_emoticons: list[str] = self._generate_different_emoticons(
             custom_client=custom_client, message=message
         )
-        print(new_response_emoticons)
+        response_emojis: list[ReactionEmoji] = self._convert_emoticons_to_emojis(
+            emoticons=new_response_emoticons
+        )
+        chat_id: int = self._chat_id_from_msg(message=message)
+        chat_peer: Peer = self._peer_from_chat_id(
+            custom_client=custom_client, chat_id=chat_id
+        )
+        await self._place_emojis(
+            custom_client=custom_client,
+            peer=chat_peer,
+            message=message,
+            emojis=response_emojis,
+        )
+        self._log_method_success(
+            method_name="update",
+            custom_client=custom_client,
+            message=message,
+            picked_response_emoticons=new_response_emoticons,
+        )
 
     async def _get_random_msg_from_queue(
         self, custom_client: CustomClient

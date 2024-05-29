@@ -648,19 +648,22 @@ spelling = ["pyenchant (>=3.2,<4.0)"]
 testutils = ["gitpython (>3)"]
 
 [[package]]
-name = "pyrogram"
-version = "2.0.106"
+name = "Pyrogram"
+version = "2.1.19"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
-python-versions = "~=3.7"
+python-versions = "~=3.8"
 files = [
-    {file = "Pyrogram-2.0.106-py3-none-any.whl", hash = "sha256:32b62b3d93030b1080cbe45b88c0e8790cf4e2179cf3321ede810d48edf97bc7"},
-    {file = "Pyrogram-2.0.106.tar.gz", hash = "sha256:30202995758fcb6e0f91224704ab7fedefea454297724bd70a6a71a23748c16f"},
+    {file = "dev.zip", hash = "sha256:19fa38eeca64622874bfe0d32ff92a8bf1ac0b0632d3af9d5ff7faecf02bb82c"},
 ]
 
 [package.dependencies]
 pyaes = "1.6.1"
 pysocks = "1.7.1"
+
+[package.source]
+type = "url"
+url = "https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip"
 
 [[package]]
 name = "pysocks"
@@ -1032,4 +1035,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "82e3282ba66dea20fb46b5b6521ddc85483de5511fb7fe0c6a1c337062b155f0"
+content-hash = "52c8fa4fee5ec2b30c6fb20e83cbdf4c8912f9fb3f5ac6cd15bb1404886c1da0"

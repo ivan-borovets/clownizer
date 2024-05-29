@@ -5,23 +5,25 @@ package-mode = false
 python = "^3.12"
 uvloop = "^0.19.0"
 tgcrypto = "^1.2.5"
-black = "^24.4.2"
 apscheduler = "^3.10.4"
 loguru = "^0.7.2"
 pydantic = "^2.7.2"
 pyyaml = "^6.0.1"
 types-pyyaml = "^6.0.12.20240311"
-ruff = "^0.4.6"
 cachetools = "^5.3.3"
+types-cachetools = "^5.3.0.7"
+pyrogram = { url = "https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip" }
+
+[tool.poetry.dev-dependencies]
+black = "^24.4.2"
+ruff = "^0.4.6"
 bandit = "^1.7.8"
 flake8 = "^7.0.0"
 flake8-pyprojecttoml = "^0.0.2"
 isort = "^5.13.2"
 pylint = "^3.2.2"
 mypy = "^1.10.0"
-types-cachetools = "^5.3.0.7"
 pre-commit = "^3.7.1"
-pyrogram = {url = "https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip"}
 
 [tool.black]
 line-length = 88

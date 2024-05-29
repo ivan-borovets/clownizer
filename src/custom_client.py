@@ -1,14 +1,16 @@
 import random
 from collections import deque
-from cachetools import LRUCache
 from typing import Callable, Sequence
+
+from cachetools import LRUCache
 from pyrogram import Client
 from pyrogram.types import User
 
-from user_settings import UserSettings
 from custom_scheduler import CustomScheduler
+from user_settings import UserSettings
 
 
+# pylint: disable=R0901,R0902
 class CustomClient(Client):
     def __init__(
         self, name: str, user_settings: UserSettings, sleep_threshold: int = 10
@@ -24,7 +26,7 @@ class CustomClient(Client):
         self.chat_emoticons_map: dict = {}
         self.chat_peer_map: dict = {}
         self.is_premium: bool | None = None
-        self.emoticon_picker: Callable[[Sequence[str]], list[str]] | None = None
+        self.emoticon_picker: Callable[[Sequence[str]], Sequence[str]] | None = None
         self.msg_queue: deque = deque(maxlen=self.user_settings.msg_queue_size)
         self.msg_keeper: LRUCache = LRUCache(maxsize=self.user_settings.msg_queue_size)
         self.scheduler: CustomScheduler = CustomScheduler(
@@ -33,13 +35,12 @@ class CustomClient(Client):
 
     async def set_emoticon_picker(self) -> None:
         """
-        Depending on the Telegram Premium status selects the way of choosing emoticons (1-3)
+        Depending on the Telegram Premium status selects
+        the way of choosing emoticons (1-3)
         """
         if self.is_premium is None:
             await self._set_premium()
-        self.emoticon_picker: Callable[[Sequence[str]], list[str]] = (
-            self._sample if self.is_premium else self._choice
-        )
+        self.emoticon_picker = self._sample if self.is_premium else self._choice
 
     async def _set_premium(self) -> None:
         """
@@ -49,14 +50,14 @@ class CustomClient(Client):
         self.is_premium = user.is_premium
 
     @staticmethod
-    def _choice(emoticons: Sequence[str]) -> list[str]:
+    def _choice(emoticons: Sequence[str]) -> Sequence[str]:
         """
         Returns the list with one random emoticon from the sequence of many
         """
-        return [random.choice(emoticons)]
+        return [random.choice(emoticons)]  # nosec
 
     @staticmethod
-    def _sample(emoticons: Sequence[str]) -> list[str]:
+    def _sample(emoticons: Sequence[str]) -> Sequence[str]:
         """
         Returns the list with three random emoticons from the sequence of many
         """

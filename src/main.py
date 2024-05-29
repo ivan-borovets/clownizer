@@ -1,10 +1,11 @@
+from typing import Callable
+
 import uvloop
 from pyrogram import idle
 from pyrogram.handlers import MessageHandler
-from typing import Callable
 
-from loggers import logger
 from custom_client import CustomClient
+from loggers import logger
 from message_emoji_manager import MessageEmojiManager
 from user_settings import UserSettings
 
@@ -45,6 +46,7 @@ async def main():
         logger.success("Telegram auth completed successfully!")
         register_msg_handler(custom_client=client, func=message_emoji_manager.respond)
         register_scheduler(custom_client=client, func=message_emoji_manager.update)
+        logger.success("Handlers are registered. App is ready to work.")
         await idle()
 
 

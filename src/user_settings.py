@@ -1,5 +1,5 @@
 import yaml
-from pydantic import BaseModel, ValidationError, field_validator, Field
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 import constants
 from loggers import logger
@@ -27,9 +27,8 @@ class UserSettings(BaseModel):
         except ValidationError:
             logger.error("The program launch failed. Check the config.yaml!")
             raise
-        else:
-            logger.success("The settings look fine!")
-            return user_settings
+        logger.success("The settings look fine!")
+        return user_settings
 
     @staticmethod
     def _dict_from_yaml(yaml_file: str) -> dict:
@@ -40,6 +39,7 @@ class UserSettings(BaseModel):
             yaml_dict = yaml.safe_load(file)
         return yaml_dict
 
+    # pylint: disable=E0213
     @field_validator("emoticons_for_enemies")
     def validate_enemy_emo(cls, v):
         for emoticon in v:
@@ -47,6 +47,7 @@ class UserSettings(BaseModel):
                 raise ValueError(f"{emoticon} in `emoticons_for_enemies` is not valid!")
         return v
 
+    # pylint: disable=E0213
     @field_validator("emoticons_for_friends")
     def validate_friend_emo(cls, v):
         for emoticon in v:
@@ -54,6 +55,7 @@ class UserSettings(BaseModel):
                 raise ValueError(f"{emoticon} in `emoticons_for_friends` is not valid!")
         return v
 
+    # pylint: disable=E0213
     @field_validator("targets", "emoticons_for_enemies", "emoticons_for_friends")
     def validate_length(cls, v):
         if len(v) == 0:

@@ -1,10 +1,11 @@
 import random
-from pyrogram.errors import ReactionInvalid, MessageNotModified, FloodWait
+from typing import Any, Sequence
+
+from pyrogram.errors import FloodWait, MessageNotModified, ReactionInvalid
 from pyrogram.raw import functions
 from pyrogram.raw.base import Peer
 from pyrogram.raw.types import ReactionEmoji
-from pyrogram.types import Message, Chat, Reaction, ChatReactions
-from typing import Any, Sequence
+from pyrogram.types import Chat, ChatPreview, ChatReactions, Message, Reaction
 
 import constants
 from constants import FriendshipStatus
@@ -14,6 +15,13 @@ from loggers import logger
 
 
 class MessageEmojiManager:
+    # register this as message handler function for testing purposes
+    # pylint: disable=W0613
+    @staticmethod
+    def echo(custom_client: CustomClient, message: Message):
+        print(message)
+
+    # pylint: disable=R0911
     async def respond(
         self, custom_client: CustomClient, message: Message | None
     ) -> None:
@@ -21,33 +29,37 @@ class MessageEmojiManager:
         Processes incoming messages to place emojis as a response
         """
         if not self._is_valid_message(message=message):
-            return
-        chat_id: int = self._chat_id_from_msg(message=message)
+            return None
+        chat_id: int | None = self._chat_id_from_msg(message=message)
+        if chat_id is None:
+            return None
         if not self._is_allowed_chat(custom_client=custom_client, chat_id=chat_id):
-            return
-        sender_id: int = self._sender_id_from_message(message=message)
+            return None
+        sender_id: int | None = self._sender_id_from_message(message=message)
+        if not sender_id:
+            return None
         if not self._is_target_sender(custom_client=custom_client, sender_id=sender_id):
-            return
+            return None
         # for memoization and the latter functions
         await self._write_chat_info_from_id(
             custom_client=custom_client, chat_id=chat_id
         )
-        emoticons_allowed: tuple[str] | None = self._chat_emoticons_from_chat_id(
+        emoticons_allowed: Sequence[str] = self._chat_emoticons_from_chat_id(
             custom_client=custom_client, chat_id=chat_id
         )
-        if emoticons_allowed is None:
-            return
-        response_emoticons: tuple[str] = self._get_response_emoticons(
+        response_emoticons: Sequence[str] = self._get_response_emoticons(
             custom_client=custom_client,
             emoticons_allowed=emoticons_allowed,
             sender_id=sender_id,
         )
         if not response_emoticons:
-            return
-        picked_response_emoticons: list[str] = custom_client.emoticon_picker(
+            return None
+        if not custom_client.emoticon_picker:
+            return None
+        picked_response_emoticons: Sequence[str] = custom_client.emoticon_picker(
             response_emoticons
         )
-        response_emojis: list[ReactionEmoji] = self._convert_emoticons_to_emojis(
+        response_emojis: Sequence[ReactionEmoji] = self._convert_emoticons_to_emojis(
             emoticons=picked_response_emoticons
         )
         # for memoization and the latter functions
@@ -61,7 +73,7 @@ class MessageEmojiManager:
             await self._place_emojis(
                 custom_client=custom_client,
                 peer=chat_peer,
-                message_id=message.id,
+                message_id=message.id,  # type: ignore
                 emojis=response_emojis,
             )
         except (ReactionInvalid, MessageNotModified):
@@ -74,41 +86,50 @@ class MessageEmojiManager:
                 picked_response_emoticons=picked_response_emoticons,
             )
         # store message ids to retrieve it later
-        msg_queue_container: tuple[int] = (chat_id, message.id)
+        # message is not None, checked in _is_valid_message()
+        msg_queue_container: Sequence[int] = (chat_id, message.id)  # type: ignore
         custom_client.msg_queue.append(msg_queue_container)
 
     def _get_response_emoticons(
         self,
         custom_client: CustomClient,
-        emoticons_allowed: tuple[str],
+        emoticons_allowed: Sequence[str],
         sender_id: int,
-    ) -> tuple[str]:
+    ) -> Sequence[str]:
         """
         Calculates the intersection of allowed and preset emoticons
-        Returns the resulting intersection as a tuple
+        Returns the resulting intersection as a sequence
         """
         sender_is_friend: bool = self._sender_is_friend(
             custom_client=custom_client, sender_id=sender_id
         )
-        emoticons_from_friendship: tuple[str] = self._emoticons_from_friendship(
+        emoticons_from_friendship: Sequence[str] = self._emoticons_from_friendship(
             custom_client=custom_client, is_friend=sender_is_friend
         )
-        response_emoticons: tuple[str] = tuple(
+        response_emoticons: Sequence[str] = tuple(
             set(emoticons_allowed) & set(emoticons_from_friendship)
         )
         return response_emoticons
 
     @staticmethod
     def _is_valid_message(message: Message | None) -> bool:
-        return getattr(message, "from_user", None) is not None and message.from_user
+        if message is None:
+            return False
+        return getattr(message, "from_user", None) is not None and bool(
+            message.from_user
+        )
 
     @staticmethod
     def _chat_id_from_msg(message: Message | None) -> int | None:
         """
         Returns chat id from a provided message
         """
-        if getattr(message, "chat", None) is None or not message.chat:
-            return
+        if (
+            message is None
+            or getattr(message, "chat", None) is None
+            or not message.chat
+        ):
+            return None
         return message.chat.id
 
     def _is_allowed_chat(self, custom_client: CustomClient, chat_id: int) -> bool:
@@ -116,7 +137,10 @@ class MessageEmojiManager:
         Determines whether the chat is allowed
         """
         chat_is_private: bool = self._is_chat_private(chat_id)
-        return chat_is_private or chat_id in custom_client.user_settings.chats_allowed
+        chats_allowed: dict[int, str] | None = custom_client.user_settings.chats_allowed
+        return chat_is_private or (
+            chats_allowed is not None and chat_id in chats_allowed
+        )
 
     @staticmethod
     def _is_chat_private(chat_id: int) -> bool:
@@ -130,8 +154,12 @@ class MessageEmojiManager:
         """
         Returns sender id for a given message
         """
-        if getattr(message, "from_user", None) is None or not message.from_user:
-            return
+        if (
+            message is None
+            or getattr(message, "from_user", None) is None
+            or not message.from_user
+        ):
+            return None
         return message.from_user.id
 
     @staticmethod
@@ -148,12 +176,15 @@ class MessageEmojiManager:
         """
         Retrieves chat info for a given id and puts it in a client attribute
         """
-        chat_info: Chat | None = custom_client.chat_info_map.get(chat_id, None)
+        chat_info: Chat | ChatPreview | None = custom_client.chat_info_map.get(
+            chat_id, None
+        )
         if chat_info is not None:
-            return
-        chat_info: Chat = await custom_client.get_chat(chat_id=chat_id)
-        custom_client.chat_info_map.setdefault(chat_id, chat_info)
-        return
+            return None
+        chat_info = await custom_client.get_chat(chat_id=chat_id)
+        if isinstance(chat_info, Chat):
+            custom_client.chat_info_map.setdefault(chat_id, chat_info)
+        return None
 
     @staticmethod
     def _chat_attribute_from_chat_id(
@@ -162,21 +193,22 @@ class MessageEmojiManager:
         """
         Returns chat attribute for a given id (for a saved chat map)
         """
-        chat_info: Chat = custom_client.chat_info_map.get(chat_id)
+        chat_info: Chat | None = custom_client.chat_info_map.get(chat_id, None)
         return getattr(chat_info, attribute, None)
 
     def _chat_emoticons_from_chat_id(
         self, custom_client: CustomClient, chat_id: int
-    ) -> tuple[str] | None:
+    ) -> Sequence[str]:
         """
-        Returns a list of emoticons that are allowed in a chat with a given id
+        Returns a sequence of emoticons that are allowed in a chat with a given id
 
-        The confusing logic is due to the different structure of the response depending on the chat settings
+        The confusing logic is due to the different structure of the response
+        depending on the chat settings
         """
-        emoticons_allowed: tuple[str] | None = custom_client.chat_emoticons_map.get(
-            chat_id, None
+        emoticons_allowed: Sequence[str] = custom_client.chat_emoticons_map.get(
+            chat_id, ()
         )
-        if emoticons_allowed is not None:
+        if emoticons_allowed:
             return emoticons_allowed
         available_reactions: ChatReactions = self._chat_attribute_from_chat_id(
             custom_client=custom_client,
@@ -186,15 +218,18 @@ class MessageEmojiManager:
         chat_is_private: bool = self._is_chat_private(chat_id)
         if available_reactions is None and not chat_is_private:
             custom_client.chat_emoticons_map.setdefault(chat_id, ())
-            return
+            return ()
         if chat_is_private or available_reactions.all_are_enabled:
             custom_client.chat_emoticons_map.setdefault(
                 chat_id, constants.VALID_EMOTICONS
             )
             return constants.VALID_EMOTICONS
-        chat_reactions: list[Reaction] = available_reactions.reactions
-        emoticons_allowed: tuple[str] = tuple(
-            reaction.emoji for reaction in chat_reactions
+        chat_reactions: Sequence[Reaction] | None = available_reactions.reactions
+        if not chat_reactions:
+            custom_client.chat_emoticons_map.setdefault(chat_id, ())
+            return ()
+        emoticons_allowed = tuple(
+            reaction.emoji for reaction in chat_reactions  # type: ignore
         )
         custom_client.chat_emoticons_map.setdefault(chat_id, emoticons_allowed)
         return emoticons_allowed
@@ -204,16 +239,18 @@ class MessageEmojiManager:
         """
         For a given sender returns the friendship status
         """
-        sender_info: tuple[str, FriendshipStatus] = (
-            custom_client.user_settings.targets.get(sender_id)
+        sender_info: tuple[str, FriendshipStatus] | None = (
+            custom_client.user_settings.targets.get(sender_id, None)
         )
+        if sender_info is None:
+            return False
         _, status = sender_info
         return status == constants.FriendshipStatus.FRIEND
 
     @staticmethod
     def _emoticons_from_friendship(
         custom_client: CustomClient, is_friend: bool
-    ) -> tuple[str]:
+    ) -> Sequence[str]:
         """
         For a given friendship status of a target returns corresponding emoticons
         """
@@ -224,14 +261,16 @@ class MessageEmojiManager:
         )
 
     @staticmethod
-    def _convert_emoticons_to_emojis(emoticons: Sequence[str]) -> list[ReactionEmoji]:
+    def _convert_emoticons_to_emojis(
+        emoticons: Sequence[str],
+    ) -> Sequence[ReactionEmoji]:
         """
         Converts emoticons of type string into ReactionEmojis
         """
         return [ReactionEmoji(emoticon=emoticon) for emoticon in emoticons]
 
     @staticmethod
-    def _convert_emojis_to_emoticons(emojis: Sequence[ReactionEmoji]) -> list[str]:
+    def _convert_emojis_to_emoticons(emojis: Sequence[ReactionEmoji]) -> Sequence[str]:
         """
         Converts ReactionEmojis into emoticons of type string
         """
@@ -246,17 +285,17 @@ class MessageEmojiManager:
         """
         chat_peer: Peer = custom_client.chat_peer_map.get(chat_id, None)
         if chat_peer is not None:
-            return
-        chat_peer: Peer = await custom_client.resolve_peer(peer_id=chat_id)
+            return None
+        chat_peer = await custom_client.resolve_peer(peer_id=chat_id)
         custom_client.chat_peer_map.setdefault(chat_id, chat_peer)
-        return
+        return None
 
     @staticmethod
     def _peer_from_chat_id(custom_client: CustomClient, chat_id: int) -> Peer:
         """
         Returns chat peer for a given id
         """
-        peer: Peer = custom_client.chat_peer_map.get(chat_id)
+        peer: Peer = custom_client.chat_peer_map.get(chat_id, None)
         return peer
 
     async def _place_emojis(
@@ -264,22 +303,22 @@ class MessageEmojiManager:
         custom_client: CustomClient,
         peer: Peer,
         message_id: int,
-        emojis: list[ReactionEmoji],
+        emojis: Sequence[ReactionEmoji],
     ) -> None:
         """
-        Places ReactionEmojis from a list of ReactionEmojis on message if possible
+        Places ReactionEmojis from a sequence of ReactionEmojis on message if possible
         """
         while True:
             try:
                 await custom_client.invoke(
                     functions.messages.SendReaction(
-                        peer=peer,
+                        peer=peer,  # type: ignore
                         msg_id=message_id,
                         add_to_recent=True,
-                        reaction=emojis,
+                        reaction=list(emojis),
                     )
                 )
-                return
+                return None
             except ReactionInvalid:
                 emoticons = ", ".join(self._convert_emojis_to_emoticons(emojis))
                 logger.error(
@@ -299,8 +338,12 @@ class MessageEmojiManager:
         """
         Returns sender name for a given message
         """
-        if getattr(message, "from_user", None) is None or not message.from_user:
-            return
+        if (
+            message is None
+            or getattr(message, "from_user", None) is None
+            or not message.from_user
+        ):
+            return None
         first_name = message.from_user.first_name or ""
         last_name = message.from_user.last_name or ""
         full_name = (
@@ -344,14 +387,18 @@ class MessageEmojiManager:
         method_name: str,
         custom_client: CustomClient,
         message: Message | None,
-        picked_response_emoticons: list[str],
+        picked_response_emoticons: Sequence[str],
     ) -> None:
         """
         Logs a successful method execution
         """
-        if not message or getattr(message, "link", None) is None:
+        if message is None or getattr(message, "link", None) is None:
             logger.error("Success log failed. Message is outdated.")
-        chat_id: int = self._chat_id_from_msg(message=message)
+            return None
+        chat_id: int | None = self._chat_id_from_msg(message=message)
+        if not chat_id:
+            logger.error("Success log failed. Message is outdated.")
+            return None
         chat_title: str = self._chat_title_from_chat_id(
             custom_client=custom_client, chat_id=chat_id
         )
@@ -362,45 +409,53 @@ class MessageEmojiManager:
             f"{method_name}|{recipient_name}|{chat_title}|{response_emoticons}|{url}"
         )
         logger.success(log_msg)
+        return None
 
+    # pylint: disable=R0911
     async def update(self, custom_client: CustomClient) -> None:
         """
         Processes previously processed messages, updating emojis
         """
         if not custom_client.msg_queue:
-            return
+            return None
         message: Message | None = await self._get_random_msg_from_queue(
             custom_client=custom_client
         )
-        if not message:
-            return
-        chat_id: int = self._chat_id_from_msg(message=message)
-        emoticons_allowed: tuple[str] | None = self._chat_emoticons_from_chat_id(
+        if message is None:
+            return None
+        chat_id: int | None = self._chat_id_from_msg(message=message)
+        if not chat_id:
+            return None
+        emoticons_allowed: Sequence[str] = self._chat_emoticons_from_chat_id(
             custom_client=custom_client, chat_id=chat_id
         )
         # we don't want to update no or single emoji
-        if emoticons_allowed is None or len(emoticons_allowed) < 2:
-            return
-        sender_id: int = self._sender_id_from_message(message=message)
-        response_emoticons: tuple[str] = self._get_response_emoticons(
+        if len(emoticons_allowed) < 2:
+            return None
+        sender_id: int | None = self._sender_id_from_message(message=message)
+        if not sender_id:
+            return None
+        response_emoticons: Sequence[str] = self._get_response_emoticons(
             custom_client=custom_client,
             emoticons_allowed=emoticons_allowed,
             sender_id=sender_id,
         )
         if not response_emoticons:
-            return
-        msg_emoticons: tuple[str] | None = self._msg_emoticons_from_msg(message=message)
+            return None
+        msg_emoticons: Sequence[str] | None = self._msg_emoticons_from_msg(
+            message=message
+        )
         if not msg_emoticons:
-            return
+            return None
         # we don't want to place the same emojis
         if set(response_emoticons) <= set(msg_emoticons):
-            return
-        new_response_emoticons: list[str] = self._generate_different_emoticons(
+            return None
+        new_response_emoticons: Sequence[str] = self._generate_different_emoticons(
             custom_client=custom_client,
             msg_emoticons=msg_emoticons,
             response_emoticons=response_emoticons,
         )
-        response_emojis: list[ReactionEmoji] = self._convert_emoticons_to_emojis(
+        response_emojis: Sequence[ReactionEmoji] = self._convert_emoticons_to_emojis(
             emoticons=new_response_emoticons
         )
         chat_peer: Peer = self._peer_from_chat_id(
@@ -429,7 +484,9 @@ class MessageEmojiManager:
         """
         Returns random message from a custom client message queue with ids tuples
         """
-        msg_queue_container: tuple[int] = random.choice(custom_client.msg_queue)
+        msg_queue_container: tuple[int] = random.choice(  # nosec
+            custom_client.msg_queue
+        )
         message: Message | None = custom_client.msg_keeper.get(
             msg_queue_container, None
         )
@@ -438,8 +495,8 @@ class MessageEmojiManager:
         message = await self._get_message_from_client(
             custom_client=custom_client, msg_queue_container=msg_queue_container
         )
-        if not message:
-            return
+        if message is None:
+            return None
         custom_client.msg_keeper.setdefault(key=msg_queue_container, default=message)
         return message
 
@@ -452,10 +509,10 @@ class MessageEmojiManager:
         """
         while True:
             try:
-                message: Message = await custom_client.get_messages(
+                message: Message | list[Message] = await custom_client.get_messages(
                     *msg_queue_container
                 )
-                return message
+                return message if isinstance(message, Message) else None
             except FloodWait as f:
                 await FloodWaitManager.handle(f, custom_client=custom_client)
 
@@ -464,13 +521,19 @@ class MessageEmojiManager:
         custom_client: CustomClient,
         msg_emoticons: Sequence[str],
         response_emoticons: Sequence[str],
-    ) -> list[str]:
+    ) -> Sequence[str]:
         """
         Receives collections of previously installed emoticons and
         available emoticons and generates a different one from the original one
         """
+        if not hasattr(custom_client, "emoticon_picker") or not callable(
+            custom_client.emoticon_picker
+        ):
+            logger.error(
+                "Custom client does not have a callable method `emoticon_picker`"
+            )
+            raise ValueError
         msg_emoticons_set: set[str] = set(msg_emoticons)
-        response_emoticons: Sequence[str] = response_emoticons
         while True:
             new_picked_response_emoticons_set: set[str] = set(
                 custom_client.emoticon_picker(response_emoticons)
@@ -484,12 +547,18 @@ class MessageEmojiManager:
                 return list(new_picked_response_emoticons_set)
 
     @staticmethod
-    def _msg_emoticons_from_msg(message: Message) -> tuple[str] | None:
+    def _msg_emoticons_from_msg(message: Message) -> Sequence[str] | None:
         """
-        Returns a tuple of placed reactions from a given message
+        Returns a sequence of placed reactions from a given message
         """
-        if getattr(message, "reactions", None) is None or not message.reactions:
-            return
-        msg_reactions: list[Reaction] = message.reactions.reactions
-        msg_emoticons: tuple[str] = tuple(reaction.emoji for reaction in msg_reactions)
+        if (
+            message is None
+            or getattr(message, "reactions", None) is None
+            or not message.reactions
+        ):
+            return None
+        msg_reactions: Sequence[Reaction] = message.reactions.reactions  # type: ignore
+        msg_emoticons: Sequence[str] | None = tuple(
+            reaction.emoji for reaction in msg_reactions  # type: ignore
+        )
         return msg_emoticons

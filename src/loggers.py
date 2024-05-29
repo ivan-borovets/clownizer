@@ -1,4 +1,5 @@
 import sys
+
 from loguru import logger
 
 
@@ -34,22 +35,30 @@ class LoggerFilters:
 logger.remove()
 logger.add(
     sink=sys.stderr,
-    format="<blue>{time:YYYY-MM-DD|HH:mm:ss}|</blue><green>{level}</green><blue>|{message}</blue>",
+    format=(
+        "<blue>{time:YYYY-MM-DD|HH:mm:ss}|</blue>"
+        "<green>{level}</green>"
+        "<blue>|{message}</blue>"
+    ),
     colorize=True,
     level="SUCCESS",
-    filter=LoggerFilters.success_filter,
+    filter=LoggerFilters.success_filter,  # type: ignore
 )
 logger.add(
     sink=sys.stderr,
-    format="<yellow>{time:YYYY-MM-DD|HH:mm:ss}|</yellow><red>{level}</red><yellow>|{message}</yellow>",
+    format=(
+        "<yellow>{time:YYYY-MM-DD|HH:mm:ss}|</yellow>"
+        "<red>{level}</red>"
+        "<yellow>|{message}</yellow>"
+    ),
     colorize=True,
     level="ERROR",
-    filter=LoggerFilters.error_filter,
+    filter=LoggerFilters.error_filter,  # type: ignore
 )
 logger.add(
     sink="../logs/logfile_{time:YYYY-MM-DD_HH-mm-ss}.log",
     format="{time:YYYY-MM-DD|HH:mm:ss}|{level}|{message}",
-    filter=LoggerFilters.success_error_filter,
+    filter=LoggerFilters.success_error_filter,  # type: ignore
     rotation="1 day",
     compression="zip",
 )

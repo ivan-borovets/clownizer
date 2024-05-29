@@ -1,11 +1,13 @@
 import asyncio
 from datetime import datetime, timedelta
+
 from pyrogram.errors import FloodWait
 
 from custom_client import CustomClient
 from loggers import logger
 
 
+# pylint: disable=R0903
 class FloodWaitManager:
     @staticmethod
     async def handle(f: FloodWait, custom_client: CustomClient) -> None:

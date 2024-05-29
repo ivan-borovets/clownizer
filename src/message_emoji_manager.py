@@ -1,7 +1,12 @@
 import random
 from typing import Any, Sequence
 
-from pyrogram.errors import FloodWait, MessageNotModified, ReactionInvalid
+from pyrogram.errors import (
+    FloodWait,
+    MessageIdInvalid,
+    MessageNotModified,
+    ReactionInvalid,
+)
 from pyrogram.raw import functions
 from pyrogram.raw.base import Peer
 from pyrogram.raw.types import ReactionEmoji
@@ -73,10 +78,11 @@ class MessageEmojiManager:
             await self._place_emojis(
                 custom_client=custom_client,
                 peer=chat_peer,
+                chat_id=chat_id,
                 message_id=message.id,  # type: ignore
                 emojis=response_emojis,
             )
-        except (ReactionInvalid, MessageNotModified):
+        except (ReactionInvalid, MessageNotModified, MessageIdInvalid):
             pass
         else:
             self._log_method_success(
@@ -298,10 +304,12 @@ class MessageEmojiManager:
         peer: Peer = custom_client.chat_peer_map.get(chat_id, None)
         return peer
 
+    # pylint: disable=R0913
     async def _place_emojis(
         self,
         custom_client: CustomClient,
         peer: Peer,
+        chat_id: int,
         message_id: int,
         emojis: Sequence[ReactionEmoji],
     ) -> None:
@@ -329,6 +337,14 @@ class MessageEmojiManager:
                 raise
             except MessageNotModified:
                 logger.error("Message was not modified. The modification is outdated.")
+                raise
+            except MessageIdInvalid:
+                logger.error("Message was not modified. The modification is outdated.")
+                msg_queue_container: Sequence[int] = (chat_id, message_id)
+                if msg_queue_container in custom_client.msg_queue:
+                    custom_client.msg_queue.remove(msg_queue_container)
+                if msg_queue_container in custom_client.msg_keeper:
+                    custom_client.msg_keeper.pop(key=msg_queue_container)
                 raise
             except FloodWait as f:
                 await FloodWaitManager.handle(f=f, custom_client=custom_client)
@@ -465,10 +481,11 @@ class MessageEmojiManager:
             await self._place_emojis(
                 custom_client=custom_client,
                 peer=chat_peer,
+                chat_id=chat_id,
                 message_id=message.id,
                 emojis=response_emojis,
             )
-        except (ReactionInvalid, MessageNotModified):
+        except (ReactionInvalid, MessageNotModified, MessageIdInvalid):
             pass
         else:
             self._log_method_success(

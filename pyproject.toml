@@ -27,6 +27,7 @@ pre-commit = "^3.7.1"
 
 [tool.black]
 line-length = 88
+exclude = 'README\.md'
 
 [tool.flake8]
 max-line-length = 88
@@ -39,7 +40,6 @@ disable = [
     "missing-docstring",
 ]
 max-line-length = 88
-
 
 [tool.mypy]
 ignore_missing_imports = true

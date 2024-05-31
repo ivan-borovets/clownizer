@@ -649,12 +649,12 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "Pyrogram"
-version = "2.1.19"
+version = "2.1.20"
 description = "Elegant, modern and asynchronous Telegram MTProto API framework in Python for users and bots"
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "dev.zip", hash = "sha256:19fa38eeca64622874bfe0d32ff92a8bf1ac0b0632d3af9d5ff7faecf02bb82c"},
+    {file = "v2.1.20.zip", hash = "sha256:0c00fbeb56f5e1034d19f52cf2ae1c7d83d6e082f91ead88f3b65e9e92a70694"},
 ]
 
 [package.dependencies]
@@ -663,7 +663,7 @@ pysocks = "1.7.1"
 
 [package.source]
 type = "url"
-url = "https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip"
+url = "https://github.com/KurimuzonAkuma/pyrogram/archive/refs/tags/v2.1.20.zip"
 
 [[package]]
 name = "pysocks"
@@ -1035,4 +1035,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "6b0fdd8344ab198551291eb2018b0e44f04706a547683e2e5d8f7710b43630fe"
+content-hash = "163f0c02b9177bdf63c151603071ddfbaeb1f29b13c884a2c4a0e57d14ce70ad"

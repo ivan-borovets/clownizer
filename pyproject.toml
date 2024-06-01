@@ -12,7 +12,7 @@ pyyaml = "^6.0.1"
 types-pyyaml = "^6.0.12.20240311"
 cachetools = "^5.3.3"
 types-cachetools = "^5.3.0.7"
-pyrogram = {url = "https://github.com/KurimuzonAkuma/pyrogram/archive/refs/tags/v2.1.20.zip"}
+pyrogram = {url = "https://github.com/KurimuzonAkuma/pyrogram/archive/v2.1.21.zip"}
 
 [tool.poetry.dev-dependencies]
 black = "^24.4.2"

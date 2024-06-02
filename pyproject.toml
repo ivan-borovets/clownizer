@@ -12,7 +12,9 @@ pyyaml = "^6.0.1"
 types-pyyaml = "^6.0.12.20240311"
 cachetools = "^5.3.3"
 types-cachetools = "^5.3.0.7"
-pyrogram = {url = "https://github.com/KurimuzonAkuma/pyrogram/archive/v2.1.21.zip"}
+pyrogram = { url = "https://github.com/KurimuzonAkuma/pyrogram/archive/v2.1.21.zip" }
+pytest = "^8.2.1"
+pytest-asyncio = "^0.23.7"
 
 [tool.poetry.dev-dependencies]
 black = "^24.4.2"
@@ -24,6 +26,9 @@ isort = "^5.13.2"
 pylint = "^3.2.2"
 mypy = "^1.10.0"
 pre-commit = "^3.7.1"
+
+[tool.bandit.assert_used]
+skips = ['*_test.py', '*/test_*.py']
 
 [tool.black]
 line-length = 88
@@ -41,5 +46,14 @@ disable = [
 ]
 max-line-length = 88
 
+[tool.pylint.main]
+init-hook = 'import sys; sys.path.append("src")'
+
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:There is no current event loop:DeprecationWarning"
+]
+pythonpath = "src"

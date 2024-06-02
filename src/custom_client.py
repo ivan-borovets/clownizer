@@ -54,7 +54,11 @@ class CustomClient(Client):
         """
         Returns the list with one random emoticon from the sequence of many
         """
-        return [random.choice(emoticons)]  # nosec
+        try:
+            chosen_emoticons: Sequence[str] = [random.choice(emoticons)]  # nosec
+            return chosen_emoticons
+        except IndexError:
+            return []
 
     @staticmethod
     def _sample(emoticons: Sequence[str]) -> Sequence[str]:

@@ -4,10 +4,10 @@ import uvloop
 from pyrogram import idle
 from pyrogram.handlers import MessageHandler
 
-from custom_client import CustomClient
-from loggers import logger
-from message_emoji_manager import MessageEmojiManager
-from user_settings import UserSettings
+from src.custom_client import CustomClient
+from src.loggers import logger
+from src.message_emoji_manager import MessageEmojiManager
+from src.user_settings import UserSettings
 
 
 def register_msg_handler(custom_client: CustomClient, func: Callable) -> None:
@@ -32,7 +32,7 @@ def register_scheduler(custom_client: CustomClient, func: Callable) -> None:
     custom_client.scheduler.start()
 
 
-user_settings: UserSettings = UserSettings.from_config(config_file="./config.yaml")
+user_settings: UserSettings = UserSettings.from_config(config_file="src/config.yaml")
 uvloop.install()  # https://docs.pyrogram.org/topics/speedups
 client: CustomClient = CustomClient(
     name="my_app", user_settings=user_settings, sleep_threshold=0

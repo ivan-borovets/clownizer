@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 from pyrogram.errors import FloodWait
 
-from custom_client import CustomClient
-from loggers import logger
+from src.custom_client import CustomClient
+from src.loggers import logger
 
 
 # pylint: disable=R0903

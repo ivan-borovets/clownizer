@@ -12,11 +12,11 @@ from pyrogram.raw.base import Peer
 from pyrogram.raw.types import ReactionEmoji
 from pyrogram.types import Chat, ChatPreview, ChatReactions, Message, Reaction
 
-import constants
-from constants import FriendshipStatus
-from custom_client import CustomClient
-from floodwait_manager import FloodWaitManager
-from loggers import logger
+import src.constants
+from src.constants import FriendshipStatus
+from src.custom_client import CustomClient
+from src.floodwait_manager import FloodWaitManager
+from src.loggers import logger
 
 
 class MessageEmojiManager:
@@ -227,9 +227,9 @@ class MessageEmojiManager:
             return ()
         if chat_is_private or available_reactions.all_are_enabled:
             custom_client.chat_emoticons_map.setdefault(
-                chat_id, constants.VALID_EMOTICONS
+                chat_id, src.constants.VALID_EMOTICONS
             )
-            return constants.VALID_EMOTICONS
+            return src.constants.VALID_EMOTICONS
         chat_reactions: Sequence[Reaction] | None = available_reactions.reactions
         if not chat_reactions:
             custom_client.chat_emoticons_map.setdefault(chat_id, ())
@@ -251,7 +251,7 @@ class MessageEmojiManager:
         if sender_info is None:
             return False
         _, status = sender_info
-        return status == constants.FriendshipStatus.FRIEND
+        return status == src.constants.FriendshipStatus.FRIEND
 
     @staticmethod
     def _emoticons_from_friendship(

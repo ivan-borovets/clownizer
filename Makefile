@@ -8,3 +8,8 @@ check:
 	ruff check .
 	pylint src
 	mypy .
+
+coverage-check:
+	python -m coverage run -m pytest
+coverage-report:
+	coverage report

@@ -1,8 +1,8 @@
 import yaml
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-import constants
-from loggers import logger
+import src.constants
+from src.loggers import logger
 
 
 class UserSettings(BaseModel):
@@ -12,7 +12,7 @@ class UserSettings(BaseModel):
     update_timeout: int = Field(default=..., ge=2)
     update_jitter: int = Field(default=..., ge=0)
     chats_allowed: dict[int, str] | None
-    targets: dict[int, tuple[str, constants.FriendshipStatus]]
+    targets: dict[int, tuple[str, src.constants.FriendshipStatus]]
     emoticons_for_enemies: tuple[str, ...]
     emoticons_for_friends: tuple[str, ...]
 
@@ -43,7 +43,7 @@ class UserSettings(BaseModel):
     @field_validator("emoticons_for_enemies")
     def validate_enemy_emo(cls, v):
         for emoticon in v:
-            if emoticon not in constants.VALID_EMOTICONS:
+            if emoticon not in src.constants.VALID_EMOTICONS:
                 raise ValueError(f"{emoticon} in `emoticons_for_enemies` is not valid!")
         return v
 
@@ -51,7 +51,7 @@ class UserSettings(BaseModel):
     @field_validator("emoticons_for_friends")
     def validate_friend_emo(cls, v):
         for emoticon in v:
-            if emoticon not in constants.VALID_EMOTICONS:
+            if emoticon not in src.constants.VALID_EMOTICONS:
                 raise ValueError(f"{emoticon} in `emoticons_for_friends` is not valid!")
         return v
 

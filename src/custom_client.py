@@ -6,8 +6,8 @@ from cachetools import LRUCache
 from pyrogram import Client
 from pyrogram.types import User
 
-from custom_scheduler import CustomScheduler
-from user_settings import UserSettings
+from src.custom_scheduler import CustomScheduler
+from src.user_settings import UserSettings
 
 
 # pylint: disable=R0901,R0902

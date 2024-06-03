@@ -10,7 +10,7 @@ services:
       - clownizer-session:/app/src
     stdin_open: true
     tty: true
-    command: [ "poetry", "run", "python", "main.py" ]
+    command: [ "poetry", "run", "python", "src/main.py" ]
 
 volumes:
   clownizer-session:

@@ -2,9 +2,11 @@ import random
 from typing import Any, Sequence
 
 from pyrogram.errors import (
+    BadRequest,
     FloodWait,
     MessageIdInvalid,
     MessageNotModified,
+    NotAcceptable,
     ReactionInvalid,
 )
 from pyrogram.raw import functions
@@ -71,9 +73,11 @@ class MessageEmojiManager:
         await self._write_chat_peer_from_id(
             custom_client=custom_client, chat_id=chat_id
         )
-        chat_peer: Peer = self._peer_from_chat_id(
+        chat_peer: Peer = self._peer_from_chat_id(  # type: ignore
             custom_client=custom_client, chat_id=chat_id
         )
+        if not chat_peer:
+            return None
         try:
             await self._place_emojis(
                 custom_client=custom_client,
@@ -82,8 +86,14 @@ class MessageEmojiManager:
                 message_id=message.id,  # type: ignore
                 emojis=response_emojis,
             )
-        except (ReactionInvalid, MessageNotModified, MessageIdInvalid):
-            pass
+        except (
+            ReactionInvalid,
+            MessageNotModified,
+            MessageIdInvalid,
+            BadRequest,
+            NotAcceptable,
+        ):
+            return None
         else:
             self._log_method_success(
                 method_name="respond",
@@ -187,7 +197,10 @@ class MessageEmojiManager:
         )
         if chat_info is not None:
             return None
-        chat_info = await custom_client.get_chat(chat_id=chat_id)
+        try:
+            chat_info = await custom_client.get_chat(chat_id=chat_id)
+        except ValueError:
+            return None
         if isinstance(chat_info, Chat):
             custom_client.chat_info_map.setdefault(chat_id, chat_info)
         return None
@@ -292,12 +305,15 @@ class MessageEmojiManager:
         chat_peer: Peer = custom_client.chat_peer_map.get(chat_id, None)
         if chat_peer is not None:
             return None
-        chat_peer = await custom_client.resolve_peer(peer_id=chat_id)
+        try:
+            chat_peer = await custom_client.resolve_peer(peer_id=chat_id)
+        except KeyError:
+            return None
         custom_client.chat_peer_map.setdefault(chat_id, chat_peer)
         return None
 
     @staticmethod
-    def _peer_from_chat_id(custom_client: CustomClient, chat_id: int) -> Peer:
+    def _peer_from_chat_id(custom_client: CustomClient, chat_id: int) -> Peer | None:
         """
         Returns chat peer for a given id
         """
@@ -345,6 +361,12 @@ class MessageEmojiManager:
                     custom_client.msg_queue.remove(msg_queue_container)
                 if msg_queue_container in custom_client.msg_keeper:
                     custom_client.msg_keeper.pop(key=msg_queue_container)
+                raise
+            except BadRequest as b:
+                logger.error(f"Bad Request. id: {b.ID}, message: {b.MESSAGE}")
+                raise
+            except NotAcceptable as n:
+                logger.error(f"Not Acceptable. id: {n.ID}, message: {n.MESSAGE}")
                 raise
             except FloodWait as f:
                 await FloodWaitManager.handle(f=f, custom_client=custom_client)
@@ -474,9 +496,11 @@ class MessageEmojiManager:
         response_emojis: Sequence[ReactionEmoji] = self._convert_emoticons_to_emojis(
             emoticons=new_response_emoticons
         )
-        chat_peer: Peer = self._peer_from_chat_id(
+        chat_peer: Peer = self._peer_from_chat_id(  # type: ignore
             custom_client=custom_client, chat_id=chat_id
         )
+        if not chat_peer:
+            return None
         try:
             await self._place_emojis(
                 custom_client=custom_client,
@@ -485,8 +509,14 @@ class MessageEmojiManager:
                 message_id=message.id,
                 emojis=response_emojis,
             )
-        except (ReactionInvalid, MessageNotModified, MessageIdInvalid):
-            pass
+        except (
+            ReactionInvalid,
+            MessageNotModified,
+            MessageIdInvalid,
+            BadRequest,
+            NotAcceptable,
+        ):
+            return None
         else:
             self._log_method_success(
                 method_name="update",

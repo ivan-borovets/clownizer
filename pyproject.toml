@@ -44,6 +44,7 @@ line-length = 88
 [tool.pylint]
 disable = [
     "missing-docstring",
+    "no-else-return",
 ]
 max-line-length = 88
 

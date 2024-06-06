@@ -17,6 +17,11 @@
 **/*.gitattributes
 
 **/docker-compose.yml
+**/docker-compose.yaml
 **/Dockerfile
 **/.docker
 **/.dockerignore
+
+Makefile
+README.md
+**/tests/

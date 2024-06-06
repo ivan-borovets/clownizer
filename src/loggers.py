@@ -1,6 +1,11 @@
+import os
 import sys
 
 from loguru import logger
+
+log_dir = os.getenv(key="LOG_DIR", default="logs/")
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir, exist_ok=True)
 
 
 class LoggerFilters:
@@ -56,7 +61,7 @@ logger.add(
     filter=LoggerFilters.error_filter,  # type: ignore
 )
 logger.add(
-    sink="../logs/logfile_{time:YYYY-MM-DD_HH-mm-ss}.log",
+    sink=f"{log_dir}/logfile_{{time:YYYY-MM-DD_HH-mm-ss}}.log",
     format="{time:YYYY-MM-DD|HH:mm:ss}|{level}|{message}",
     filter=LoggerFilters.success_error_filter,  # type: ignore
     rotation="1 day",

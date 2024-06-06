@@ -13,5 +13,6 @@ RUN mkdir /app/logs && \
 COPY . .
 
 ENV PYTHONPATH=/app
+ENV LOG_DIR=/app/logs
 
 CMD ["poetry", "run", "python", "src/main.py"]

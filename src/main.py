@@ -16,6 +16,7 @@ def register_msg_handler(custom_client: CustomClient, func: Callable) -> None:
     """
     pyrogram_response_handler: MessageHandler = MessageHandler(func)
     custom_client.add_handler(pyrogram_response_handler)
+    return None
 
 
 def register_scheduler(custom_client: CustomClient, func: Callable) -> None:
@@ -30,6 +31,7 @@ def register_scheduler(custom_client: CustomClient, func: Callable) -> None:
         replace_existing=True,
     )
     custom_client.scheduler.start()
+    return None
 
 
 user_settings: UserSettings = UserSettings.from_config(config_file="src/config.yaml")

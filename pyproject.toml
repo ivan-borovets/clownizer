@@ -45,6 +45,8 @@ line-length = 88
 disable = [
     "missing-docstring",
     "no-else-return",
+    "no-else-raise",
+    "useless-return",
 ]
 max-line-length = 88
 

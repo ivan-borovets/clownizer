@@ -41,6 +41,7 @@ class CustomClient(Client):
         if self.is_premium is None:
             await self._set_premium()
         self.emoticon_picker = self._sample if self.is_premium else self._choice
+        return None
 
     async def _set_premium(self) -> None:
         """
@@ -48,6 +49,7 @@ class CustomClient(Client):
         """
         user: User = await self.get_me()
         self.is_premium = user.is_premium
+        return None
 
     @staticmethod
     def _choice(emoticons: Sequence[str]) -> Sequence[str]:

@@ -22,13 +22,16 @@ class UserSettings(BaseModel):
         Validates config and returns UserSettings instance
         """
         try:
-            dict_config = cls._dict_from_yaml(config_file)
+            dict_config: dict = cls._dict_from_yaml(config_file)
             user_settings = cls(**dict_config)
+
         except ValidationError:
             logger.error("The program launch failed. Check the config.yaml!")
             raise
-        logger.success("The settings look fine!")
-        return user_settings
+
+        else:
+            logger.success("The settings look fine!")
+            return user_settings
 
     @staticmethod
     def _dict_from_yaml(yaml_file: str) -> dict:
@@ -36,7 +39,7 @@ class UserSettings(BaseModel):
         Returns dict with YAML data
         """
         with open(file=yaml_file, mode="r", encoding="utf-8") as file:
-            yaml_dict = yaml.safe_load(file)
+            yaml_dict: dict = yaml.safe_load(file)
         return yaml_dict
 
     # pylint: disable=E0213
@@ -45,6 +48,7 @@ class UserSettings(BaseModel):
         for emoticon in v:
             if emoticon not in src.constants.VALID_EMOTICONS:
                 raise ValueError(f"{emoticon} in `emoticons_for_enemies` is not valid!")
+
         return v
 
     # pylint: disable=E0213
@@ -53,6 +57,7 @@ class UserSettings(BaseModel):
         for emoticon in v:
             if emoticon not in src.constants.VALID_EMOTICONS:
                 raise ValueError(f"{emoticon} in `emoticons_for_friends` is not valid!")
+
         return v
 
     # pylint: disable=E0213
@@ -62,4 +67,5 @@ class UserSettings(BaseModel):
             raise ValueError(
                 "The length of the `targets` and `emoticons` should be greater than 0!"
             )
+
         return v

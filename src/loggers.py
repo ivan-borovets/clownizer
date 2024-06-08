@@ -6,7 +6,7 @@ from loguru import logger
 
 log_dir = os.getenv(key="LOG_DIR", default="logs/")
 if not os.path.exists(log_dir):
-    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)  # pragma: no cover
 
 
 class LoggerFilters:

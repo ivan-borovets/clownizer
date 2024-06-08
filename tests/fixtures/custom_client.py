@@ -2,8 +2,8 @@ from typing import Sequence
 
 import pytest
 
-import constants
-from custom_client import CustomClient
+import src.constants
+from src.custom_client import CustomClient
 
 
 class MockUserSettings:
@@ -13,8 +13,8 @@ class MockUserSettings:
     update_timeout: int = 5
     update_jitter: int = 2
     chats_allowed: dict[int, str] = {-12345: "Test Chat Name"}
-    targets: dict[int, tuple[str, constants.FriendshipStatus]] = {
-        123456789: ("Alice", constants.FriendshipStatus.ENEMY)
+    targets: dict[int, tuple[str, src.constants.FriendshipStatus]] = {
+        123456789: ("Alice", src.constants.FriendshipStatus.ENEMY)
     }
     emoticons_for_enemies: tuple[str, ...] = ("🤡",)
     emoticons_for_friends: tuple[str, ...] = ("👍",)
@@ -26,9 +26,11 @@ def user_settings() -> MockUserSettings:
 
 
 @pytest.fixture
-def test_client() -> CustomClient:
+def test_client_for_custom_client() -> CustomClient:
     user_settings: MockUserSettings = MockUserSettings()
-    client: CustomClient = CustomClient(name="test_client", user_settings=user_settings)
+    client: CustomClient = CustomClient(
+        name="test_client", user_settings=user_settings  # type: ignore
+    )
     return client
 
 

@@ -35,14 +35,15 @@ def register_scheduler(custom_client: CustomClient, func: Callable) -> None:
 
 
 user_settings: UserSettings = UserSettings.from_config(config_file="src/config.yaml")
-uvloop.install()  # https://docs.pyrogram.org/topics/speedups
+# uvloop.install()  # https://docs.pyrogram.org/topics/speedups
+# seems deprecated in Python 3.12
 client: CustomClient = CustomClient(
     name="my_app", user_settings=user_settings, sleep_threshold=0
 )
 message_emoji_manager: MessageEmojiManager = MessageEmojiManager()
 
 
-async def main():
+async def main():  # pragma: no cover
     async with client:
         await client.set_emoticon_picker()
         logger.success("Telegram auth completed successfully!")
@@ -52,5 +53,5 @@ async def main():
         await idle()
 
 
-if __name__ == "__main__":
-    client.run(main())
+if __name__ == "__main__":  # pragma: no cover
+    uvloop.run(client.run(main()))

@@ -1,16 +1,21 @@
+from pathlib import Path
+from typing import Sequence
+
 import pytest
 from pydantic import ValidationError
 
 from src.user_settings import UserSettings
 
-required_fields = list(UserSettings.model_fields.keys())
+required_fields: list[str] = list(UserSettings.model_fields.keys())
 
 
-def test_from_config_valid(valid_config_content, valid_config, tmp_path) -> None:
-    config_file = tmp_path / "config.yaml"
+def test_from_config_valid(
+    valid_config_content: str, valid_config: dict, tmp_path: Path
+) -> None:
+    config_file: Path = tmp_path / "config.yaml"
     config_file.write_text(valid_config_content)
 
-    settings = UserSettings.from_config(str(config_file))
+    settings: UserSettings = UserSettings.from_config(str(config_file))
     assert settings.api_id == valid_config["api_id"]
     assert settings.api_hash == valid_config["api_hash"]
     assert settings.msg_queue_size == valid_config["msg_queue_size"]
@@ -23,8 +28,8 @@ def test_from_config_valid(valid_config_content, valid_config, tmp_path) -> None
     return None
 
 
-def test_from_config_invalid(invalid_config_content, tmp_path) -> None:
-    config_file = tmp_path / "config.yaml"
+def test_from_config_invalid(invalid_config_content: str, tmp_path: Path) -> None:
+    config_file: Path = tmp_path / "config.yaml"
     config_file.write_text(invalid_config_content)
 
     with pytest.raises(ValidationError):
@@ -32,8 +37,8 @@ def test_from_config_invalid(invalid_config_content, tmp_path) -> None:
     return None
 
 
-def test_creation_valid(valid_config) -> None:
-    settings = UserSettings(**valid_config)  # type: ignore
+def test_creation_valid(valid_config: dict) -> None:
+    settings: UserSettings = UserSettings(**valid_config)  # type: ignore
     assert settings.api_id == valid_config["api_id"]
     assert settings.api_hash == valid_config["api_hash"]
     assert settings.msg_queue_size == valid_config["msg_queue_size"]
@@ -47,8 +52,8 @@ def test_creation_valid(valid_config) -> None:
 
 
 @pytest.mark.parametrize("missing_field", required_fields)
-def test_missing_required_fields(valid_config, missing_field) -> None:
-    incomplete_config = valid_config.copy()
+def test_missing_required_fields(valid_config: dict, missing_field: str) -> None:
+    incomplete_config: dict = valid_config.copy()
     del incomplete_config[missing_field]
     with pytest.raises(ValidationError):
         UserSettings(**incomplete_config)  # type: ignore
@@ -63,8 +68,12 @@ def test_missing_required_fields(valid_config, missing_field) -> None:
         ({"update_jitter": -1}, ValidationError),
     ],
 )
-def test_invalid_cases(valid_config, invalid_data, expected_exception) -> None:
-    invalid_config = valid_config.copy()
+def test_invalid_cases(
+    valid_config: dict,
+    invalid_data: dict[str, int],
+    expected_exception,
+) -> None:
+    invalid_config: dict = valid_config.copy()
     invalid_config.update(invalid_data)
     with pytest.raises(expected_exception):
         UserSettings(**invalid_config)  # type: ignore
@@ -80,9 +89,9 @@ def test_invalid_cases(valid_config, invalid_data, expected_exception) -> None:
     ],
 )
 def test_empty_collections(
-    valid_config, field, invalid_value, expected_exception
+    valid_config: dict, field: str, invalid_value: Sequence, expected_exception
 ) -> None:
-    invalid_config = valid_config.copy()
+    invalid_config: dict = valid_config.copy()
     invalid_config[field] = invalid_value
     with pytest.raises(expected_exception):
         UserSettings(**invalid_config)  # type: ignore
@@ -90,16 +99,16 @@ def test_empty_collections(
 
 
 @pytest.mark.parametrize("field", ["emoticons_for_enemies", "emoticons_for_friends"])
-def test_invalid_emoticons(valid_config, field) -> None:
-    invalid_config = valid_config.copy()
+def test_invalid_emoticons(valid_config: dict, field: str) -> None:
+    invalid_config: dict = valid_config.copy()
     invalid_config[field] = ("invalid str",)
     with pytest.raises(ValidationError):
         UserSettings(**invalid_config)  # type: ignore
     return None
 
 
-def test_invalid_targets(valid_config) -> None:
-    invalid_config = valid_config.copy()
+def test_invalid_targets(valid_config: dict) -> None:
+    invalid_config: dict = valid_config.copy()
     invalid_config["targets"] = {123456789: ("Alice", "Neutral")}
     with pytest.raises(ValidationError):
         UserSettings(**invalid_config)  # type: ignore

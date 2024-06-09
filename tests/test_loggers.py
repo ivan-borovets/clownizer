@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Callable
+
 import pytest
 from loguru import logger
 
@@ -14,9 +17,11 @@ from src.loggers import LoggerFilters
         ("DEBUG", False),
     ],
 )
-def test_success_filter(create_log_record, level_name, expected) -> None:
+def test_success_filter(
+    create_log_record: Callable, level_name: str | None, expected: bool
+) -> None:
     if level_name is not None:
-        record = create_log_record(level_name)
+        record: dict = create_log_record(level_name)
     else:
         record = {"level": None}
     assert LoggerFilters.success_filter(record=record) is expected
@@ -33,9 +38,11 @@ def test_success_filter(create_log_record, level_name, expected) -> None:
         ("DEBUG", False),
     ],
 )
-def test_error_filter(create_log_record, level_name, expected) -> None:
+def test_error_filter(
+    create_log_record: Callable, level_name: str | None, expected: bool
+) -> None:
     if level_name is not None:
-        record = create_log_record(level_name)
+        record: dict = create_log_record(level_name)
     else:
         record = {"level": None}
     assert LoggerFilters.error_filter(record=record) is expected
@@ -52,65 +59,50 @@ def test_error_filter(create_log_record, level_name, expected) -> None:
         ("DEBUG", False),
     ],
 )
-def test_success_error_filter(create_log_record, level_name, expected) -> None:
+def test_success_error_filter(
+    create_log_record: Callable, level_name: str | None, expected: bool
+) -> None:
     if level_name is not None:
-        record = create_log_record(level_name)
+        record: dict = create_log_record(level_name)
     else:
         record = {"level": None}
     assert LoggerFilters.success_error_filter(record=record) is expected
     return None
 
 
-def test_success_logging(setup_logger) -> None:
-    log_file = setup_logger
-    logger.success("Test success message")
+@pytest.mark.parametrize(
+    "log_method, log_message, log_level, should_be_logged",
+    [
+        (logger.success, "Test success message", "SUCCESS", True),
+        (logger.error, "Test error message", "ERROR", True),
+        (logger.info, "Test info message", "INFO", False),
+        (logger.warning, "Test warning message", "WARNING", False),
+    ],
+)
+def test_logging(
+    setup_logger: Path,
+    log_method: Callable,
+    log_message: str,
+    log_level: str,
+    should_be_logged: bool,
+) -> None:
+    log_file: Path = setup_logger
+    log_method(log_message)
 
     with open(log_file, "r") as f:
         logs = f.read()
 
-    assert "SUCCESS" in logs
-    assert "Test success message" in logs
+    if should_be_logged:
+        assert log_level in logs
+        assert log_message in logs
+    else:
+        assert log_level not in logs
+        assert log_message not in logs
     return None
 
 
-def test_error_logging(setup_logger) -> None:
-    log_file = setup_logger
-    logger.error("Test error message")
-
-    with open(log_file, "r") as f:
-        logs = f.read()
-
-    assert "ERROR" in logs
-    assert "Test error message" in logs
-    return None
-
-
-def test_info_logging_not_logged(setup_logger) -> None:
-    log_file = setup_logger
-    logger.info("Test info message")
-
-    with open(log_file, "r") as f:
-        logs = f.read()
-
-    assert "INFO" not in logs
-    assert "Test info message" not in logs
-    return None
-
-
-def test_warning_logging_not_logged(setup_logger) -> None:
-    log_file = setup_logger
-    logger.warning("Test warning message")
-
-    with open(log_file, "r") as f:
-        logs = f.read()
-
-    assert "WARNING" not in logs
-    assert "Test warning message" not in logs
-    return None
-
-
-def test_logging_with_filters(setup_logger):
-    log_file = setup_logger
+def test_logging_with_filters(setup_logger: Path):
+    log_file: Path = setup_logger
     logger.success("Success msg 1")
     logger.error("Error msg 1")
     logger.debug("Debug msg 1")

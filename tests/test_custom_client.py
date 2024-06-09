@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Callable, Sequence
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -14,9 +14,11 @@ class TestSetEmoticonPicker:
         [(True, CustomClient._sample), (False, CustomClient._choice)],
     )
     async def test_set_emoticon_picker_premium(
-        test_client_for_custom_client, is_premium, expected_picker
+        test_client_for_custom_client: CustomClient,
+        is_premium: bool,
+        expected_picker: Callable,
     ) -> None:
-        mock_user = AsyncMock()
+        mock_user: AsyncMock = AsyncMock()
         mock_user.is_premium = is_premium
         test_client_for_custom_client.is_premium = None
         with patch.object(
@@ -35,9 +37,9 @@ class TestSetPremium:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("is_premium", [True, False, None])
     async def test_set_premium(
-        test_client_for_custom_client: CustomClient, is_premium
+        test_client_for_custom_client: CustomClient, is_premium: bool
     ) -> None:
-        mock_user = AsyncMock()
+        mock_user: AsyncMock = AsyncMock()
         mock_user.is_premium = is_premium
         with patch.object(
             target=test_client_for_custom_client,
@@ -66,18 +68,21 @@ class TestChoice:
         return None
 
     @classmethod
-    def test_returns_one_emoticon_if_gt_one(cls, many_emoticons) -> None:
-        cls.validate_choice(emoticons=many_emoticons)
-        return None
-
-    @classmethod
-    def test_returns_one_emoticon_if_one(cls, one_emoticon) -> None:
-        cls.validate_choice(emoticons=one_emoticon)
-        return None
-
-    @classmethod
-    def test_returns_empty_if_empty(cls, no_emoticons) -> None:
-        cls.validate_choice(emoticons=no_emoticons)
+    @pytest.mark.parametrize(
+        "emoticons_fixture",
+        [
+            "many_emoticons",
+            "one_emoticon",
+            "no_emoticons",
+        ],
+    )
+    def test_n_of_emoticons_after_choosing(
+        cls,
+        emoticons_fixture: str,
+        request: pytest.FixtureRequest,
+    ) -> None:
+        emoticons: Sequence[str] = request.getfixturevalue(emoticons_fixture)
+        cls.validate_choice(emoticons=emoticons)
         return None
 
 
@@ -93,30 +98,22 @@ class TestSample:
         return None
 
     @classmethod
-    def test_returns_three_emoticons_if_gt_three(
-        cls, many_emoticons: Sequence[str]
+    @pytest.mark.parametrize(
+        "emoticons_fixture, expected_length",
+        [
+            ("many_emoticons", 3),
+            ("three_emoticons", 3),
+            ("two_emoticons", 2),
+            ("one_emoticon", 1),
+            ("no_emoticons", 0),
+        ],
+    )
+    def test_n_of_emoticons_after_sampling(
+        cls,
+        emoticons_fixture: str,
+        expected_length: int,
+        request: pytest.FixtureRequest,
     ) -> None:
-        cls.validate_sample(emoticons=many_emoticons, expected_length=3)
-        return None
-
-    @classmethod
-    def test_returns_three_emoticons_if_three(
-        cls, three_emoticons: Sequence[str]
-    ) -> None:
-        cls.validate_sample(emoticons=three_emoticons, expected_length=3)
-        return None
-
-    @classmethod
-    def test_returns_two_emoticons_if_two(cls, two_emoticons: Sequence[str]) -> None:
-        cls.validate_sample(emoticons=two_emoticons, expected_length=2)
-        return None
-
-    @classmethod
-    def test_returns_one_emoticon_if_one(cls, one_emoticon: Sequence[str]) -> None:
-        cls.validate_sample(emoticons=one_emoticon, expected_length=1)
-        return None
-
-    @classmethod
-    def test_returns_empty_if_empty(cls, no_emoticons: Sequence[str]) -> None:
-        cls.validate_sample(emoticons=no_emoticons, expected_length=0)
+        emoticons: Sequence[str] = request.getfixturevalue(emoticons_fixture)
+        cls.validate_sample(emoticons=emoticons, expected_length=expected_length)
         return None

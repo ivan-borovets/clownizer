@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Generator
+from typing import Callable, Generator
 
 import pytest
 from loguru import logger
@@ -13,16 +13,16 @@ class MockLevel:
 
 
 @pytest.fixture
-def create_log_record():
+def create_log_record() -> Callable:
 
-    def _create_log_record(level_name):
+    def _create_log_record(level_name: str) -> dict:
         return {"level": MockLevel(level_name)}
 
     return _create_log_record
 
 
 @pytest.fixture
-def setup_logger(tmp_path) -> Generator[Path, None, None]:
+def setup_logger(tmp_path: Path) -> Generator[Path, None, None]:
     log_dir: Path = tmp_path / "logs"
     log_dir.mkdir()
     log_file: Path = log_dir / "test_logfile.log"

@@ -4,9 +4,10 @@ import pytest
 
 import src.constants
 from src.custom_client import CustomClient
+from src.user_settings import UserSettings
 
 
-class MockUserSettings:
+class MockUserSettings(UserSettings):
     api_id: int = 123456
     api_hash: str = "12345a678b9c0d12ef123g45ef678g90"
     msg_queue_size: int = 10

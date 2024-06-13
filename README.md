@@ -1,4 +1,4 @@
-# Clownizer 2.0
+# Clownizer
 
 Telegram UserBot to make fun of your friends by reacting with emoji to their messages
 
@@ -74,8 +74,8 @@ Find detailed instructions below
 ## Installation
 
 1. Make sure you have Docker and Docker Compose installed
-2. Download [`docker-compose.yaml`](https://github.com/ivan-borovets/clownizer_2/blob/master/docker-compose.yaml)
-3. Download [`src/config.yaml`](https://github.com/ivan-borovets/clownizer_2/blob/master/src/config.yaml)
+2. Download [`docker-compose.yaml`](https://github.com/ivan-borovets/clownizer/blob/master/docker-compose.yaml)
+3. Download [`src/config.yaml`](https://github.com/ivan-borovets/clownizer/blob/master/src/config.yaml)
 4. The project structure should be as follows:
 
 ```
@@ -106,7 +106,7 @@ Find detailed instructions below
 1. Clone this repo
 
     ```shell
-    git clone https://github.com/ivan-borovets/clownizer_2.git
+    git clone https://github.com/ivan-borovets/clownizer.git
     ```
 2. Set [the correct settings](#explaining-srcconfigyaml) in `src/config.yaml`
 

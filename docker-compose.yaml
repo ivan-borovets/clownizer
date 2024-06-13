@@ -1,6 +1,6 @@
 services:
   clownizer:
-    image: ivanborovets/clownizer_2:latest
+    image: ivanborovets/clownizer:latest
     build: .
     container_name: clownizer
     volumes:

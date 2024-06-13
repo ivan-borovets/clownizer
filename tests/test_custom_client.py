@@ -13,22 +13,22 @@ class TestSetEmoticonPicker:
         "is_premium, expected_picker",
         [(True, CustomClient._sample), (False, CustomClient._choice)],
     )
-    async def test_set_emoticon_picker_premium(
-        test_client_for_custom_client: CustomClient,
+    async def test_premium(
+        test_custom_client: CustomClient,
         is_premium: bool,
         expected_picker: Callable,
     ) -> None:
         mock_user: AsyncMock = AsyncMock()
         mock_user.is_premium = is_premium
-        test_client_for_custom_client.is_premium = None
+        test_custom_client.is_premium = None
         with patch.object(
-            target=test_client_for_custom_client,
+            target=test_custom_client,
             attribute="get_me",
             new_callable=AsyncMock,
         ) as mock_get_me:
             mock_get_me.return_value = mock_user
-            await test_client_for_custom_client.set_emoticon_picker()
-            assert test_client_for_custom_client.emoticon_picker == expected_picker
+            await test_custom_client.set_emoticon_picker()
+            assert test_custom_client.emoticon_picker == expected_picker
         return None
 
 
@@ -36,28 +36,26 @@ class TestSetPremium:
     @staticmethod
     @pytest.mark.asyncio
     @pytest.mark.parametrize("is_premium", [True, False, None])
-    async def test_set_premium(
-        test_client_for_custom_client: CustomClient, is_premium: bool
-    ) -> None:
+    async def test(test_custom_client: CustomClient, is_premium: bool) -> None:
         mock_user: AsyncMock = AsyncMock()
         mock_user.is_premium = is_premium
         with patch.object(
-            target=test_client_for_custom_client,
+            target=test_custom_client,
             attribute="get_me",
             new_callable=AsyncMock,
         ) as mock_get_me:
             mock_get_me.return_value = mock_user
-            await test_client_for_custom_client._set_premium()
+            await test_custom_client._set_premium()
             if is_premium is None:
-                assert test_client_for_custom_client.is_premium is None
+                assert test_custom_client.is_premium is None
             else:
-                assert test_client_for_custom_client.is_premium == is_premium
+                assert test_custom_client.is_premium == is_premium
         return None
 
 
 class TestChoice:
     @staticmethod
-    def validate_choice(emoticons: Sequence[str]) -> None:
+    def validate(emoticons: Sequence[str]) -> None:
         chosen_emoticons: Sequence[str] = CustomClient._choice(emoticons=emoticons)
         assert isinstance(chosen_emoticons, Sequence)
         assert len(chosen_emoticons) <= 1
@@ -76,19 +74,19 @@ class TestChoice:
             "no_emoticons",
         ],
     )
-    def test_n_of_emoticons_after_choosing(
+    def test_n_after_choice(
         cls,
         emoticons_fixture: str,
         request: pytest.FixtureRequest,
     ) -> None:
         emoticons: Sequence[str] = request.getfixturevalue(emoticons_fixture)
-        cls.validate_choice(emoticons=emoticons)
+        cls.validate(emoticons=emoticons)
         return None
 
 
 class TestSample:
     @staticmethod
-    def validate_sample(emoticons: Sequence[str], expected_length: int) -> None:
+    def validate(emoticons: Sequence[str], expected_length: int) -> None:
         sampled_emoticons: Sequence[str] = CustomClient._sample(emoticons=emoticons)
         assert isinstance(sampled_emoticons, Sequence)
         assert len(sampled_emoticons) == expected_length
@@ -108,12 +106,12 @@ class TestSample:
             ("no_emoticons", 0),
         ],
     )
-    def test_n_of_emoticons_after_sampling(
+    def test_n_after_sampling(
         cls,
         emoticons_fixture: str,
         expected_length: int,
         request: pytest.FixtureRequest,
     ) -> None:
         emoticons: Sequence[str] = request.getfixturevalue(emoticons_fixture)
-        cls.validate_sample(emoticons=emoticons, expected_length=expected_length)
+        cls.validate(emoticons=emoticons, expected_length=expected_length)
         return None

@@ -1,6 +1,8 @@
 .PHONY: check
 
-check:
+check: lint test
+
+lint:
 	isort .
 	black .
 	flake8 .
@@ -9,7 +11,11 @@ check:
 	pylint src
 	mypy .
 
-coverage-check:
+test:
+	pytest tests -v
+
+cov:
 	python -m coverage run -m pytest
-coverage-report:
+
+covrep:
 	coverage report

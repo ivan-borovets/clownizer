@@ -22,13 +22,12 @@ class MockUserSettings(UserSettings):
 
 
 @pytest.fixture
-def user_settings() -> MockUserSettings:
+def user_settings(valid_config: dict) -> MockUserSettings:
     return MockUserSettings()
 
 
 @pytest.fixture
-def test_client_for_custom_client() -> CustomClient:
-    user_settings: MockUserSettings = MockUserSettings()
+def test_custom_client(user_settings: MockUserSettings) -> CustomClient:
     client: CustomClient = CustomClient(
         name="test_client", user_settings=user_settings  # type: ignore
     )

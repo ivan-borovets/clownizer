@@ -25,8 +25,9 @@ class MessageEmojiManager:
     # register this as message handler function for testing purposes
     # pylint: disable=W0613
     @staticmethod
-    def echo(custom_client: CustomClient, message: Message):
+    def echo(message: Message) -> None:
         print(message)
+        return None
 
     # pylint: disable=R0911
     async def respond(
@@ -112,6 +113,7 @@ class MessageEmojiManager:
         # message is not None, checked in _is_valid_message()
         msg_queue_container: Sequence[int] = (chat_id, message.id)  # type: ignore
         custom_client.msg_queue.append(msg_queue_container)
+        return None
 
     def _get_response_emoticons(
         self,
@@ -148,6 +150,13 @@ class MessageEmojiManager:
 
         return message.chat.id
 
+    @staticmethod
+    def _is_chat_private(chat_id: int) -> bool:
+        """
+        Determines whether the chat is private
+        """
+        return chat_id > 0
+
     def _is_allowed_chat(self, custom_client: CustomClient, chat_id: int) -> bool:
         """
         Determines whether the chat is allowed
@@ -157,13 +166,6 @@ class MessageEmojiManager:
         return chat_is_private or (
             chats_allowed is not None and chat_id in chats_allowed
         )
-
-    @staticmethod
-    def _is_chat_private(chat_id: int) -> bool:
-        """
-        Determines whether the chat is private
-        """
-        return chat_id > 0
 
     @staticmethod
     def _sender_id_from_message(message: Message | None) -> int | None:
@@ -314,12 +316,14 @@ class MessageEmojiManager:
         """
         Retrieves chat peer for a given id and puts it in a client attribute
         """
-        chat_peer: Peer = custom_client.chat_peer_map.get(chat_id, None)
+        chat_peer: Peer | None = custom_client.chat_peer_map.get(chat_id, None)
         if chat_peer is not None:
             return None
 
         try:
-            chat_peer = await custom_client.resolve_peer(peer_id=chat_id)
+            chat_peer = await custom_client.resolve_peer(  # type: ignore
+                peer_id=chat_id
+            )
         except KeyError:
             return None
 
@@ -631,7 +635,7 @@ class MessageEmojiManager:
                 return list(new_picked_response_emoticons_set)
 
     @staticmethod
-    def _msg_emoticons_from_msg(message: Message) -> Sequence[str] | None:
+    def _msg_emoticons_from_msg(message: Message | None) -> Sequence[str] | None:
         """
         Returns a sequence of placed reactions from a given message
         """

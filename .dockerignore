@@ -26,3 +26,5 @@ Makefile
 README.md
 **/tests/
 .coverage
+
+media/

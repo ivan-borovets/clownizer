@@ -1,5 +1,11 @@
 # Clownizer
 
+[![Clownizer](https://img.shields.io/badge/clownizer-v1.0-color?style=plastic&logo=telegram&logoColor=F3A538&logoSize=auto&labelColor=4838F3&color=85F338)](https://github.com/ivan-borovets/clownizer)
+[![Dockerhub](https://img.shields.io/badge/docker-hub-color?style=plastic&logo=docker&logoColor=F3A538&logoSize=auto&labelColor=4838F3&color=85F338)](https://hub.docker.com/r/ivanborovets/clownizer)
+[![Python](https://img.shields.io/badge/python-3.12-color?style=plastic&logo=python&logoColor=F3A538&logoSize=auto&labelColor=4838F3&color=85F338)](https://github.com/ivan-borovets/clownizer)
+[![Pytest](https://img.shields.io/badge/coverage-100%25-color?style=plastic&logo=pytest&logoColor=F3A538&logoSize=auto&labelColor=4838F3&color=85F338)](https://github.com/ivan-borovets/clownizer)
+[![LICENSE](https://img.shields.io/badge/license-MIT-color?style=plastic&logoColor=F3A538&logoSize=auto&labelColor=4838F3&color=85F338)](https://github.com/ivan-borovets/clownizer/blob/master/LICENSE)
+
 Telegram UserBot to make fun of your friends by reacting with emoji to their messages
 
 ## Workflow
